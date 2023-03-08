@@ -5,16 +5,62 @@
 #include <vector>
 
 enum Direction {UP, DOWN, LEFT, RIGHT};
+enum Action    {NONE, FLIP, MIRROR, REVERSE};
 
 struct Point {
-    int X, Y;
+    int X = 0;
+    int Y = 0;
 };
 
 struct Element {
-    Point point;
-    Direction direction;
-    int pixelWidth, pixelHeight;
-    std::vector<std::string> pixelStr;
+    Point position;
+    Direction direction = UP;
+
+    int pixel = 4;  // size
+    std::vector<char> colors{};
+
+    void setColor(unsigned int row, unsigned int col, char color)
+    {
+        if (!colors.empty()) {
+            int size = sqrt(colors.size());
+            if (row >= 0 && row < size && col >= 0 && col < size) {
+                colors[row * size + col] = color;
+            }
+        }
+    }
+
+    char getColor(unsigned int row, unsigned int col)
+    {
+        if (!colors.empty()) {
+            int size = sqrt(colors.size());
+            if (row >= 0 && row < size && col >= 0 && col < size) {
+                return colors[row * size + col];
+            }
+        }
+        return 0;
+    }
+
+    void change(Action action = NONE)
+    {
+        if (!colors.empty() && action != NONE) {
+            int size = sqrt(colors.size());
+            std::vector<char> temp(size * size, 0);
+            for (int row = 0; row < size; row++) {
+                for (int col = 0; col < size; col++) {
+                    if (action == FLIP) {
+                        temp[row * size + col] = getColor(size - row - 1, col);
+                    }
+                    if (action == MIRROR) {
+                        temp[row * size + col] = getColor(row, size - col - 1);
+                    }
+                    if (action == REVERSE) {
+                        temp[row * size + col] = getColor(col, row);
+                    }
+                }
+            }
+            colors = temp;
+        }
+    }
 };
 
 Point normal(int x, int y);
@@ -22,8 +68,9 @@ Point effect_random(int x, int y);
 
 int view(unsigned int screen_width, unsigned int screen_height);
 void draw(SDL_Renderer *pRenderer, Element element, Point(*func)(int, int));
-std::vector<std::string> getDrawing(unsigned int index = 0);
+std::vector<char> getDrawing(int index = 0);
 
+// Test
 int main()
 {
     view(500, 500);
@@ -31,6 +78,7 @@ int main()
     return 0;
 }
 
+// Functions
 int view(unsigned int screen_width, unsigned int screen_height)
 {
     // Initialize
@@ -54,24 +102,26 @@ int view(unsigned int screen_width, unsigned int screen_height)
         return EXIT_FAILURE;
     }
 
-    Element element;
-    element.point = {0, 0};
-    element.pixelWidth = 8;
-    element.pixelHeight = 8;
-    element.direction = UP;
-    element.pixelStr = getDrawing();
+    // Element
+    std::vector<char> base = getDrawing(3);
+    int size = sqrt(base.size());
 
+    Element element;
+    element.pixel = 8;
+    element.colors = base;
+    int speed = 2 * element.pixel;
+
+    // Display
     int x = screen_width / 2;
     int y = screen_height / 2;
-    int speed = std::max(element.pixelWidth, element.pixelHeight);
-    int limitX = screen_width - speed - element.pixelWidth * element.pixelStr.front().size();
-    int limitY = screen_height - speed - element.pixelHeight * element.pixelStr.size() + 1;
+    int limitX = screen_width - speed - element.pixel * size;
+    int limitY = screen_height - speed - element.pixel * size + 1;
 
     // Events
     SDL_Event event;
     bool running = true;
     bool testing = false;
-    int count = 0;
+    int  count = 0;
 
     // Loop
     while (running) {
@@ -81,9 +131,10 @@ int view(unsigned int screen_width, unsigned int screen_height)
         SDL_RenderClear(pRenderer);
 
         if (!testing) {
-            element.point = {x, y};
+            element.position = {x, y};
             draw(pRenderer, element, &normal);
-        } else {
+        }
+        else {
             draw(pRenderer, element, &effect_random);
             SDL_Delay(50);
             if (count++ > 3) {
@@ -105,33 +156,32 @@ int view(unsigned int screen_width, unsigned int screen_height)
                 case SDLK_UP:
                     y -= speed * (y > speed && !testing);
                     if (element.direction != UP) {
-                        element.pixelStr = getDrawing();
+                        element.colors = base;
                         element.direction = UP;
                     }
                     break;
                 case SDLK_DOWN:
-
                     y += speed * (y < limitY && !testing);
                     if (element.direction != DOWN) {
-                        std::reverse(element.pixelStr.begin(), element.pixelStr.end());
+                        element.colors = base;
+                        element.change(FLIP);
                         element.direction = DOWN;
                     }
                     break;
                 case SDLK_LEFT:
                     x -= speed * (x > speed && !testing);
                     if (element.direction != LEFT) {
-                        for(auto& e : element.pixelStr) {
-                            std::reverse(e.begin(), e.end());
-                        }
+                        element.colors = base;
+                        element.change(REVERSE);
                         element.direction = LEFT;
                     }
                     break;
                 case SDLK_RIGHT:
                     x += speed * (x < limitX && !testing);
                     if (element.direction != RIGHT) {
-                        for(auto& e : element.pixelStr) {
-                            std::reverse(e.begin(), e.end());
-                        }
+                        element.colors = base;
+                        element.change(REVERSE);
+                        element.change(MIRROR);
                         element.direction = RIGHT;
                     }
                     break;
@@ -160,17 +210,18 @@ int view(unsigned int screen_width, unsigned int screen_height)
     return EXIT_SUCCESS;
 }
 
-void draw(SDL_Renderer *pRenderer, Element element, Point (*func)(int, int))
+void draw(SDL_Renderer *pRenderer, Element element, Point(*func)(int, int))
 {
-    for (int i = 0; i < element.pixelStr.size(); ++i) {
-        for (int j = 0; j < element.pixelStr[i].size(); ++j) {
-            auto p = func(element.point.X + j * element.pixelWidth,
-                          element.point.Y + i * element.pixelHeight);
-            SDL_Rect rect = {p.X, p.Y, element.pixelWidth, element.pixelHeight};
+    int size = sqrt(element.colors.size());
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            auto p = func(element.position.X + j * element.pixel,
+                          element.position.Y + i * element.pixel);
+            SDL_Rect rect = {p.X, p.Y, element.pixel, element.pixel};
             SDL_SetRenderDrawColor(pRenderer,
-                                   element.pixelStr[i][j] == 'R' ? 255 : 0,
-                                   element.pixelStr[i][j] == 'G' ? 255 : 0,
-                                   element.pixelStr[i][j] == 'B' ? 255 : 0,
+                                   element.getColor(i, j) == 'R' ? 255 : 0,
+                                   element.getColor(i, j) == 'G' ? 255 : 0,
+                                   element.getColor(i, j) == 'B' ? 255 : 0,
                                    255);
             SDL_RenderFillRect(pRenderer, &rect);
         }
@@ -190,24 +241,43 @@ Point normal(int x, int y)
     return Point{x, y};
 }
 
-std::vector<std::string> getDrawing(unsigned int index)
+std::vector<char> getDrawing(int index)
 {
-    std::vector<std::vector<std::string>> v {
+    // Sq
+    std::vector<std::string> vec {
+        // 1 x 1
         {
-            "RRRRRRRR",
-            "RGGGGGGR",
-            "BGGGGGGR",
-            "BGGGGGGR",
-            "GBBBBBBR",
-            "GBBBBBBR",
-            "RBBBBBBR",
-            "RRRRRRRR"
+            "R"
+        },
+        // 2 x 2
+        {
+            "RG"
+            "GB"
+        },
+        // 4 x 4
+        {
+            "RRGG"
+            "RRGG"
+            "GGBB"
+            "GGBB"
+        },
+        // 9 x 9
+        {
+            "----R----"
+            "---RRR---"
+            "--RRRRR--"
+            "-R-GBG-R-"
+            "R--GBG--R"
+            "B--BGB--G"
+            "---GBG---"
+            "---GBG---"
+            "---GBG---"
         },
     };
 
-    if (index < 0 || index >= v.size()) {
-        return v[0];
+    if (index < 0 || index >= vec.size()) {
+        index = 0;
     }
 
-    return v[index];
+    return std::vector<char>(vec[index].begin(), vec[index].end());
 }
