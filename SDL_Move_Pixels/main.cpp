@@ -1,3 +1,9 @@
+/*
+ * Drawing created by reading a Char Vector containing the basic colors (RGB).
+ * The Rect function is used to visualize the pixels.
+ * Small manipulations of size, movement and key-triggered effects have been implemented.
+ */
+
 #include <SDL2/SDL.h>
 
 #include <algorithm>
@@ -114,8 +120,7 @@ int view(unsigned int screen_width, unsigned int screen_height)
     // Display
     int x = screen_width / 2;
     int y = screen_height / 2;
-    int limitX = screen_width - speed - element.pixel * size;
-    int limitY = screen_height - speed - element.pixel * size + 1;
+    int limitX, limitY;
 
     // Events
     SDL_Event event;
@@ -129,6 +134,9 @@ int view(unsigned int screen_width, unsigned int screen_height)
         // Render
         SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
         SDL_RenderClear(pRenderer);
+
+        limitX = screen_width - speed - element.pixel * size;
+        limitY = screen_height - speed - element.pixel * size + 1;
 
         if (!testing) {
             element.position = {x, y};
@@ -153,14 +161,14 @@ int view(unsigned int screen_width, unsigned int screen_height)
             }
             else if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
-                case SDLK_UP:
+                case SDLK_UP:   // Up arrow key
                     y -= speed * (y > speed && !testing);
                     if (element.direction != UP) {
                         element.colors = base;
                         element.direction = UP;
                     }
                     break;
-                case SDLK_DOWN:
+                case SDLK_DOWN: // Down arrow key
                     y += speed * (y < limitY && !testing);
                     if (element.direction != DOWN) {
                         element.colors = base;
@@ -168,7 +176,7 @@ int view(unsigned int screen_width, unsigned int screen_height)
                         element.direction = DOWN;
                     }
                     break;
-                case SDLK_LEFT:
+                case SDLK_LEFT: // Left arrow key
                     x -= speed * (x > speed && !testing);
                     if (element.direction != LEFT) {
                         element.colors = base;
@@ -176,7 +184,7 @@ int view(unsigned int screen_width, unsigned int screen_height)
                         element.direction = LEFT;
                     }
                     break;
-                case SDLK_RIGHT:
+                case SDLK_RIGHT: // Right arrow key
                     x += speed * (x < limitX && !testing);
                     if (element.direction != RIGHT) {
                         element.colors = base;
@@ -185,10 +193,16 @@ int view(unsigned int screen_width, unsigned int screen_height)
                         element.direction = RIGHT;
                     }
                     break;
-                case SDLK_SPACE:
-                    testing = true;
+                case SDLK_KP_MINUS: // - key
+                    element.pixel = element.pixel > 4 ? element.pixel / 2 : element.pixel;
                     break;
-                case SDLK_ESCAPE:
+                case SDLK_KP_PLUS:  // + Key
+                    element.pixel = element.pixel < 32 ? element.pixel * 2 : element.pixel;
+                    break;
+                case SDLK_SPACE:    // Space Bar key
+                    testing = true; // Activate effect
+                    break;
+                case SDLK_ESCAPE:   // Esc key
                     running = false;
                     break;
                 default:
@@ -243,7 +257,7 @@ Point normal(int x, int y)
 
 std::vector<char> getDrawing(int index)
 {
-    // Sq
+    // Square Shape
     std::vector<std::string> vec {
         // 1 x 1
         {
