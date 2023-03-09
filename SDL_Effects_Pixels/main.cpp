@@ -18,6 +18,13 @@ struct Point {
     int Y = 0;
 };
 
+struct Pixel
+{
+    Point point;
+    char color;
+    int size;
+};
+
 struct Element {
     Point position;
     Direction direction = UP;
@@ -69,11 +76,12 @@ struct Element {
     }
 };
 
-Point normal(int x, int y);
-Point effect_random(int x, int y);
+std::vector<Pixel> normal(Element element);
+std::vector<Pixel> effect_random(Element element);
+std::vector<Pixel> effect_distance(Element element);
 
 int view(unsigned int screen_width, unsigned int screen_height);
-void draw(SDL_Renderer *pRenderer, Element element, Point(*func)(int, int));
+void draw(SDL_Renderer *pRenderer, std::vector<Pixel> pixels);
 std::vector<char> getDrawing(int index = 0);
 
 // Test
@@ -126,7 +134,7 @@ int view(unsigned int screen_width, unsigned int screen_height)
     SDL_Event event;
     bool running = true;
     bool testing = false;
-    int  count = 0;
+    int number = 1;
 
     // Loop
     while (running) {
@@ -140,15 +148,15 @@ int view(unsigned int screen_width, unsigned int screen_height)
 
         if (!testing) {
             element.position = {x, y};
-            draw(pRenderer, element, &normal);
+            draw(pRenderer, normal(element));
         }
-        else {
-            draw(pRenderer, element, &effect_random);
+        if (testing && number == 1) {
+            draw(pRenderer, effect_random(element));
             SDL_Delay(50);
-            if (count++ > 3) {
-                testing = false;
-                count = 0;
-            }
+        }
+        if (testing && number == 2) {
+            draw(pRenderer, effect_distance(element));
+            SDL_Delay(10);
         }
 
         SDL_RenderPresent(pRenderer);
@@ -193,16 +201,24 @@ int view(unsigned int screen_width, unsigned int screen_height)
                         element.direction = RIGHT;
                     }
                     break;
-                case SDLK_KP_MINUS: // - key
+                case SDLK_KP_MINUS:     // - key
                     element.pixel = element.pixel > 4 ? element.pixel / 2 : element.pixel;
                     break;
-                case SDLK_KP_PLUS:  // + Key
+                case SDLK_KP_PLUS:      // + Key
                     element.pixel = element.pixel < 32 ? element.pixel * 2 : element.pixel;
                     break;
-                case SDLK_SPACE:    // Space Bar key
-                    testing = true; // Activate effect
+                case SDLK_SPACE:        // Space Bar key
+                    testing = false;    // Stop effect
                     break;
-                case SDLK_ESCAPE:   // Esc key
+                case SDLK_1:            // Number Key
+                    testing = true;
+                    number = 1;
+                    break;
+                case SDLK_2:            // Number Key
+                    testing = true;
+                    number = 2;
+                    break;
+                case SDLK_ESCAPE:       // Esc key
                     running = false;
                     break;
                 default:
@@ -224,35 +240,73 @@ int view(unsigned int screen_width, unsigned int screen_height)
     return EXIT_SUCCESS;
 }
 
-void draw(SDL_Renderer *pRenderer, Element element, Point(*func)(int, int))
+void draw(SDL_Renderer *pRenderer, std::vector<Pixel> pixels)
 {
-    int size = sqrt(element.colors.size());
-    for (int row = 0; row < size; ++row) {
-        for (int col = 0; col < size; ++col) {
-            auto p = func(element.position.X + col * element.pixel,
-                          element.position.Y + row * element.pixel);
-            SDL_Rect rect = {p.X, p.Y, element.pixel, element.pixel};
-            SDL_SetRenderDrawColor(pRenderer,
-                                   element.getColor(row, col) == 'R' ? 255 : 0,
-                                   element.getColor(row, col) == 'G' ? 255 : 0,
-                                   element.getColor(row, col) == 'B' ? 255 : 0,
-                                   255);
-            SDL_RenderFillRect(pRenderer, &rect);
-        }
+    for (auto& px : pixels) {
+        SDL_Rect rect = {px.point.X, px.point.Y, px.size, px.size};
+        SDL_SetRenderDrawColor(pRenderer,
+                               px.color == 'R' ? 255 : 0,
+                               px.color == 'G' ? 255 : 0,
+                               px.color == 'B' ? 255 : 0,
+                               255);
+        SDL_RenderFillRect(pRenderer, &rect);
     }
 }
 
-Point effect_random(int x, int y)
+std::vector<Pixel> effect_random(Element element)
 {
+    std::vector<Pixel> pixels{};
+    int size = sqrt(element.colors.size());
     int factor = 50;
-    x += (random() % factor) - (random() % factor);
-    y += (random() % factor) - (random() % factor);
-    return Point{x, y};
+
+    for (int row = 0; row < size; ++row) {
+        for (int col = 0; col < size; ++col) {
+            int x = element.position.X + col * element.pixel + (random() % factor) - (random() % factor);
+            int y = element.position.Y + row * element.pixel + (random() % factor) - (random() % factor);
+            pixels.push_back(Pixel{Point{x, y}, element.getColor(row, col), element.pixel});
+        }
+    }
+
+    return pixels;
 }
 
-Point normal(int x, int y)
+std::vector<Pixel> effect_distance(Element element)
 {
-    return Point{x, y};
+    std::vector<Pixel> pixels{};
+    int size = sqrt(element.colors.size());
+    int dist = 20 * element.pixel;
+    int middle = size / 2;
+
+    static int disp = element.pixel;
+    if (disp++ > dist) {
+        disp = element.pixel;
+    }
+
+    for (int row = 0; row < size; ++row) {
+        for (int col = 0; col < size; ++col) {
+            int x = element.position.X + col * element.pixel + (disp * (col > middle)) - (disp * (col < middle));
+            int y = element.position.Y + row * element.pixel + (disp * (row > middle)) - (disp * (row < middle));
+            pixels.push_back(Pixel{Point{x, y}, element.getColor(row, col), element.pixel});
+        }
+    }
+
+    return pixels;
+}
+
+std::vector<Pixel> normal(Element element)
+{
+    std::vector<Pixel> pixels{};
+    int size = sqrt(element.colors.size());
+
+    for (int row = 0; row < size; ++row) {
+        for (int col = 0; col < size; ++col) {
+            int x = element.position.X + col * element.pixel;
+            int y = element.position.Y + row * element.pixel;
+            pixels.push_back(Pixel{Point{x, y}, element.getColor(row, col), element.pixel});
+        }
+    }
+
+    return pixels;
 }
 
 std::vector<char> getDrawing(int index)
