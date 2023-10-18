@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>6</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>54</x>
+      <y>84</y>
+      <w>918</w>
+      <h>570</h>
+    </coordinates>
+    <panel_attributes>Engine
+--
+-m_window : SDL_Window"*"
+-m_renderer : SDL_Renderer*
+-m_event : SDL_Event
+-m_bkgColor : SDL_Color
+-m_fonts : map&lt;string, TTF_Font*&gt;
+-m_textures : map&lt;string, SDL_Texture*&gt;
+-m_externalControl : bool
+-m_gameState : State::Game
+-m_inputState: State::Input
+-m_screenHeight : int
+-m_screenWidth : int
+-struct Performance
+--
+Engine(screenWidth : int, screenHeight : int, title : const &amp;string)
++show() : void
++gameStateEqual(state : State::Game) : bool
++setAsExternalGameloopControl() : void
++inform(message : const string &amp;amp) : void
++inform(messages : initializer_list&lt;string&gt; , multipleLines : bool) : void
+-initialize() : void
+-gameLoop() : void
+-finalize() : void
+-inputControl() : void
+-renderScreen() : void
+-updateGameplay() : void
+-render() : void
+-update()  : void
+-quit() : void
+-renderTexture(texture : SDL_Texture *, clip : SDL_Rect, box : SDL_FRect, angle : double, scale : float, flip : SDL_RendererFlip) : bool
+#currentRenderer() : SDL_Renderer *
+#setBackgroundColor(color : SDL_Color) : void
+#inputState() : State::Input
+#inputStateEqual(state : State::Input) : bool
+#setGameState(state : State::Game) : void
+#gameTitle() : string
+#windowPosition() : std::array&lt;int, 2&gt;
+#template&lt;typename T = int&gt; auto windowSize() : std::array&lt;T, 2&gt;
+#template&lt;typename T = int&gt; auto windowWidth() : T
+#template&lt;typename T = int&gt; auto windowHeight() : T
+#gameState() : State::Game
+#performanceReport() : Performance
+#loadFont(id : const string &amp;, filename : const string &amp;) : bool
+#loadTexture(id : const string &amp;, filename : const string &amp;) : bool
+#loadTexture(id : const string &amp;, rows : int, columns : int, filename : const string &amp;) : bool
+#renderTextFont(fontId : const string &amp;, text : const string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, flip : SDL_RendererFlip) : bool
+#renderTexture(id : const string &amp;) : bool
+#renderTexture(id : const string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float,flip : SDL_RendererFlip) : bool
+#renderTexture(id : const string &amp;, x : float, y : float,angle : double, scale : float) : bool
+#textFont(id : const string &amp;) : TTF_Font *final;
+#textFontExists(id : const string &amp;) : bool
+#texture(id : const string &amp;) : SDL_Texture *final;
+#textureExists(id : const string &amp;) : bool
+#textureSize(id : const string &amp;) : std::array&lt;int, 2&gt;
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
