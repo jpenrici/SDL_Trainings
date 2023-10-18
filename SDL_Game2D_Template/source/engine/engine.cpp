@@ -175,16 +175,16 @@ void Engine::inputControl()
                 m_inputState = State::Input::keyboard_down_left;
             }
             // 4 Directional Movement and Space
-            if (keyState[SDL_SCANCODE_W] || keyState[SDL_SCANCODE_UP]) {
+            if (keyState[SDL_SCANCODE_W] || keyState[SDL_SCANCODE_UP] && keyState[SDL_SCANCODE_SPACE]) {
                 m_inputState = State::Input::keyboard_up;
             }
-            if (keyState[SDL_SCANCODE_S] || keyState[SDL_SCANCODE_DOWN]) {
+            if (keyState[SDL_SCANCODE_S] || keyState[SDL_SCANCODE_DOWN] && keyState[SDL_SCANCODE_SPACE]) {
                 m_inputState = State::Input::keyboard_down;
             }
-            if (keyState[SDL_SCANCODE_A] || keyState[SDL_SCANCODE_LEFT]) {
+            if (keyState[SDL_SCANCODE_A] || keyState[SDL_SCANCODE_LEFT] && keyState[SDL_SCANCODE_SPACE]) {
                 m_inputState = State::Input::keyboard_left;
             }
-            if (keyState[SDL_SCANCODE_D] || keyState[SDL_SCANCODE_RIGHT]) {
+            if (keyState[SDL_SCANCODE_D] || keyState[SDL_SCANCODE_RIGHT] && keyState[SDL_SCANCODE_SPACE]) {
                 m_inputState = State::Input::keyboard_right;
             }
             // 8 Directional Movement and Space
@@ -212,7 +212,6 @@ void Engine::inputControl()
             if (keyState[SDL_SCANCODE_S] && keyState[SDL_SCANCODE_A] && keyState[SDL_SCANCODE_SPACE]) {
                 m_inputState = State::Input::keyboard_down_left_space;
             }
-
         }
         else if (m_event.type == SDL_KEYUP) {
             m_inputState = State::Input::none;

@@ -1,7 +1,7 @@
 #include "topDown2D.h"
 
 
-Game::Game() : Engine2(600, 480, "Game Test")
+Game::Game() : Engine2(854, 480, "Game Test")
 {
     auto blue  = RGBA{  0,   0, 255};
     auto green = RGBA{  0, 255,   0};
@@ -33,9 +33,10 @@ Game::Game() : Engine2(600, 480, "Game Test")
 
     // Player
     loadSpriteSheet(m_playerId, 1, 6, "resources/spaceship.png");
-    newSprite(m_playerId, m_playerId, {{300, 380}, 96, 96});
-    newAnimation(m_playerId, m_playerId, {0, 1, 2}, 10);
+    newSprite(m_playerId, m_playerId, {{300, 380}, 64, 64});
+    newAnimation(m_playerId, m_playerId, {5, 1, 5, 3, 2, 4}, 8);
     setAnimation(m_playerId, m_playerId);
+    setSpriteScale(m_playerId, 0.5);
     setSpriteLayer(m_playerId, 1);
     m_playerSpeed = 380;
 
@@ -46,7 +47,7 @@ Game::Game() : Engine2(600, 480, "Game Test")
     m_bulletSpeed = 10;
 
     // Obstacle
-    loadSpriteSheet(m_obstacleId, "resources/meteor.png");
+    loadSpriteSheet(m_obstacleId, 1, 2, "resources/meteor.png");
     m_obstacleCounter = 0;
     m_obstacleSpeed = 50;
     for (int i = 0; i < 80; ++i) {
@@ -71,7 +72,7 @@ Game::Game() : Engine2(600, 480, "Game Test")
     newText("Energy", font, "", {5, 70}, white, 14);
 
     std::string str = "Use WASD or arrows to move, Space to shot and Esc to pause.";
-    newText("Help", font, str, {5, windowHeight() - 20.f}, white, 14);
+    newText("Help", font, str, {5, windowHeight<float>() - 20}, white, 14);
 
     setTextActivity("Pause", State::Activity::disabled);
 
@@ -88,6 +89,7 @@ void Game::newObstacle()
     });
     if (m_obstacleCounter % 5 != 0) {
         setSpriteBox(obstacleId, 10, 10);
+        setSpriteByIndex(obstacleId, 1);
         setSpriteLayer(obstacleId, -1);
         setSpriteScale(obstacleId, stbox::Math::randomize(2, 4) * 0.1);
         setSpriteSolid(obstacleId, false);
@@ -111,7 +113,7 @@ void Game::render()
 
     auto player = std::get<0>(sprite(m_playerId));
     float width = m_playerEnergy < 0 ? 0 : (player.width - 10) * m_playerEnergy / 100;
-    renderEnergyBar({player.position.X.toFloat() + 5, player.position.Y.toFloat() + player.height - 10}, width, 5);
+    renderEnergyBar({player.position.X.toFloat() + 5, player.position.Y.toFloat() + player.height + 5}, width, 5);
 }
 
 void Game::update()
@@ -211,6 +213,7 @@ void Game::update()
         std::string bulletId = m_bulletId + std::to_string(m_bulletCounter % 10);
         Position xy = {player.position.X.toFloat() + player.width / 2, player.position.Y.toFloat() + player.height / 2};
         newSprite(bulletId, m_bulletId, {xy, 8, 16});
+        setSpriteScale(bulletId, 0.3);
         m_bulletIds.emplace(bulletId);
         m_bulletLock = true;
         m_bulletCounter++;
@@ -245,13 +248,16 @@ void Game::update()
                     // Collision: Bullet x Obstacle
                     if (checkCollision(animBullet.id, obstacle.id) && animBullet.animation.frame == 0) {
                         repositionObstacle = true;
+                        setSpriteLayer(bulletId, 2);
                         setSpriteByIndex(animBullet.id, 1);
-                        setSpriteScale(animBullet.id, 10);
                         m_bulletLock = false;
                         m_score += 10;
                         m_hits++;
                     }
                     animBullet.position.Y.value -= m_bulletSpeed * performanceReport().deltaTime;
+                    if (animBullet.animation.frame == 1) {
+                        setSpriteScale(bulletId, animBullet.scale + 0.005);
+                    }
                 }
                 setSpriteBox(animBullet.id, animBullet.boxCollider());
                 if (animBullet.position.Y.value < 0) {
