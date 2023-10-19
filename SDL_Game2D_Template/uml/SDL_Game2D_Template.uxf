@@ -1,71 +1,519 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="15.1">
-  <zoom_level>6</zoom_level>
+  <zoom_level>3</zoom_level>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>54</x>
-      <y>84</y>
-      <w>918</w>
-      <h>570</h>
+      <x>105</x>
+      <y>60</y>
+      <w>402</w>
+      <h>276</h>
     </coordinates>
     <panel_attributes>Engine
 --
--m_window : SDL_Window"*"
--m_renderer : SDL_Renderer*
--m_event : SDL_Event
 -m_bkgColor : SDL_Color
--m_fonts : map&lt;string, TTF_Font*&gt;
--m_textures : map&lt;string, SDL_Texture*&gt;
+-m_event : SDL_Event
 -m_externalControl : bool
+-m_fonts : map&lt;string, TTF_Font*&gt;
+-m_gamePerformance : Performance
 -m_gameState : State::Game
 -m_inputState: State::Input
+-m_renderer : SDL_Renderer*
 -m_screenHeight : int
 -m_screenWidth : int
--struct Performance
+-m_textures : map&lt;string, SDL_Texture*&gt;
+-m_window : SDL_Window*
+-Performance : struct
 --
-Engine(screenWidth : int, screenHeight : int, title : const &amp;string)
-+show() : void
+Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 +gameStateEqual(state : State::Game) : bool
-+setAsExternalGameloopControl() : void
-+inform(message : const string &amp;amp) : void
++inform(message : string &amp;) : void
 +inform(messages : initializer_list&lt;string&gt; , multipleLines : bool) : void
--initialize() : void
--gameLoop() : void
++setAsExternalGameloopControl() : void
++show() : void
 -finalize() : void
+-gameLoop() : void
+-initialize() : void
 -inputControl() : void
--renderScreen() : void
--updateGameplay() : void
--render() : void
--update()  : void
 -quit() : void
+-render() : void
+-renderScreen() : void
 -renderTexture(texture : SDL_Texture *, clip : SDL_Rect, box : SDL_FRect, angle : double, scale : float, flip : SDL_RendererFlip) : bool
+-update() : void
+-updateGameplay() : void
 #currentRenderer() : SDL_Renderer *
-#setBackgroundColor(color : SDL_Color) : void
+#gameState() : State::Game
+#gameTitle() : string
 #inputState() : State::Input
 #inputStateEqual(state : State::Input) : bool
+#loadFont(id : string &amp;, filename : string &amp;) : bool
+#loadTexture(id : string &amp;, filename : string &amp;) : bool
+#loadTexture(id : string &amp;, rows : int, columns : int, filename : string &amp;) : bool
+#performanceReport() : Performance
+#renderTextFont(fontId : string &amp;, text : string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, flip : SDL_RendererFlip) : bool
+#renderTexture(id : string &amp;) : bool
+#renderTexture(id : string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float,flip : SDL_RendererFlip) : bool
+#renderTexture(id : string &amp;, x : float, y : float,angle : double, scale : float) : bool
+#setBackgroundColor(color : SDL_Color) : void
 #setGameState(state : State::Game) : void
-#gameTitle() : string
-#windowPosition() : std::array&lt;int, 2&gt;
+#template&lt;typename T = int&gt; auto windowHeight() : T
 #template&lt;typename T = int&gt; auto windowSize() : std::array&lt;T, 2&gt;
 #template&lt;typename T = int&gt; auto windowWidth() : T
-#template&lt;typename T = int&gt; auto windowHeight() : T
-#gameState() : State::Game
-#performanceReport() : Performance
-#loadFont(id : const string &amp;, filename : const string &amp;) : bool
-#loadTexture(id : const string &amp;, filename : const string &amp;) : bool
-#loadTexture(id : const string &amp;, rows : int, columns : int, filename : const string &amp;) : bool
-#renderTextFont(fontId : const string &amp;, text : const string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, flip : SDL_RendererFlip) : bool
-#renderTexture(id : const string &amp;) : bool
-#renderTexture(id : const string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float,flip : SDL_RendererFlip) : bool
-#renderTexture(id : const string &amp;, x : float, y : float,angle : double, scale : float) : bool
-#textFont(id : const string &amp;) : TTF_Font *final;
-#textFontExists(id : const string &amp;) : bool
-#texture(id : const string &amp;) : SDL_Texture *final;
-#textureExists(id : const string &amp;) : bool
-#textureSize(id : const string &amp;) : std::array&lt;int, 2&gt;
---
+#textFont(id : string &amp;) : TTF_Font *
+#textFontExists(id : string &amp;) : bool
+#texture(id : string &amp;) : SDL_Texture *
+#textureExists(id : string &amp;) : bool
+#textureSize(id : string &amp;) : std::array&lt;int, 2&gt;
+#windowPosition() : std::array&lt;int, 2&gt;
 </panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>54</y>
+      <w>297</w>
+      <h>288</h>
+    </coordinates>
+    <panel_attributes>Engine2
+--
+-m_layers :std::set&lt;int&gt;
+-m_sprites : std::map&lt;string, Sprite&gt;
+-m_spriteSheets : std::map&lt;string, SpriteSheet&gt;
+-m_texts : std::map&lt;string, Text&gt;
+-m_viewBoxCollider : bool
+-Animation : struct 
+-Sprite : struct 
+-SpriteSheet : struct 
+-Text : struct 
+--
+Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
+-newSprite(id : string, spriteSheetID : string, x : float, y : float, width : float, height : float, quiet : bool) : bool
+-spriteSheet(id : string) : tuple&lt;SpriteSheet, bool&gt;
+#checkCollision(spriteId1 : string, spriteId2 : string, quiet : bool) : bool
+#eraseSprite(id : string, quiet : bool) : bool
+#loadSprite(id : string, filename : string &amp;, quiet : bool) : bool
+#loadSpriteSheet(id : string, filename : string &amp;) : bool
+#loadSpriteSheet(string &amp;id, rows : int, columns : int, filename : string &amp;) : bool
+#newAnimation(id : string, spriteId : string, vector&lt;int&gt;; spriteNumbers, int timeInterval, quiet : bool) : bool
+#newSprite(id : string, spriteSheetId : string, box : stbox::Rectangle, quiet : bool) : bool
+#newSprite(id : string, spriteSheetId : string, quiet : bool) : bool
+#newSprite(id : string, spriteSheetId : string, x : float, y : float, quiet : bool) : bool
+#newText(id : string &amp;, fontId : string &amp;, text : string &amp;, position : stbox::Point, foreground : stbox::Color::RGBA, size : int) : bool
+#render() : void
+#renderSprite(sprite : Sprite) : bool
+#renderText(textId : string) : bool
+#setAnimation(id : string, spriteId : string, quiet : bool) : bool
+#setAnimationSpeed(id : string, spped : int, quiet : bool) : bool
+#setSpriteActivity(id : string, activity : State::Activity, quiet : bool) : bool
+#setSpriteAngle(id : string, angle : double, quiet : bool) : bool
+#setSpriteBox(id : string, box : stbox::Rectangle, quiet : bool) : bool
+#setSpriteBox(id : string, width : float, height : float, quiet : bool) : bool
+#setSpriteByIndex(id : string, index : int, quiet : bool) : bool
+#setSpriteLayer(id : string, layer : int, quiet : bool) : bool
+#setSpritePosition(id : string, position : stbox::Point, quiet : bool) : bool
+#setSpriteScale(id : string, scale : float, quiet : bool) : bool
+#setSpriteSolid(id : string, isSolid : bool, quiet : bool) : bool
+#setText(id : string, text : string, quiet : bool) : bool
+#setTextActivity(id : string, activity : State::Activity, quiet : bool) : bool
+#setTextAngle(id : string, angle : int, quiet : bool) : bool
+#setTextColor(id : string, foreground : stbox::Color::RGBA, quiet : bool) : bool
+#setTextFont(id : string, fontId : string, quiet : bool) : bool
+#setTextLayer(id : string, layer : int, quiet : bool) : bool
+#setTextPosition(id : string, position : stbox::Point, quiet : bool) : bool
+#setTextScale(id : string, scale : float, quiet : bool) : bool
+#setTextSize(id : string, size : int, quiet : bool) : bool
+#sprite(id : string, quiet : bool) : tuple&lt;Sprite, bool&gt;;
+#sprites() : map&lt;string, Sprite&gt;;
+#spriteSheetSize(id : string, quiet : bool) : stbox::Math::Size&lt;float&gt;;
+#swapSprite(id : string, sprite : Sprite, quiet : bool) : bool
+#template&lt;typename T&gt;; auto windowSize() : stbox::Math::Size&lt;T&gt;;
+#text(id : string) : Text
+#texts() : map&lt;string, Text&gt;;
+#totalSprites() : int
+#viewBoxCollider(enabled : bool) : void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>105</x>
+      <y>369</y>
+      <w>114</w>
+      <h>33</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;struct&gt;&gt;
+Performance
+--
++deltaTime : double
++framesPerSecond : double
++ticks : Uint64
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>351</y>
+      <w>102</w>
+      <h>93</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;struct&gt;&gt;
+Text
+--
++activity : State::Activity
++angle : double
++fontId : string
++fontSize : int
++foreground : stbox::Color::RGBA
++id : string
++layer : int
++position : stbox::Point
++scale : float
++text : string
+--
++move(distance : stbox::Point) : void
++setAngle(newAngle : double) : void
++setColor(color : stbox::Color::RGBA) : void
++setScale(newScale : float) : void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>675</x>
+      <y>465</y>
+      <w>60</w>
+      <h>51</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;struct&gt;&gt;
+SpriteSheet
+--
++columns : int
++count : int
++filename : string
++id : string
++rows : int
++spriteHeight : int 
++spriteWidth : int 
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>558</x>
+      <y>465</y>
+      <w>90</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;struct&gt;&gt;
+Animation
+--
++frame : int 
++id : string id
++loop : bool
++sequence : vector&lt;int&gt;
++speed : int
+--
++forward() : void
++restart() : void
++setFrame(int newFrame) : void
++setLoop(bool running) : void
++setSpeed(int newSpeed) : void
++str() : string
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>558</x>
+      <y>567</y>
+      <w>198</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;struct&gt;&gt;
+Sprite
+--
++id : string id
++spriteSheetId : string
++position : stbox::Point
++rgba : stbox::Color::RGBA
++solid : bool
++angle : double 
++height : float 
++opacity : float 
++scale : float 
++width : float 
++layer : int
++animation : Engine2::Animation
++animations : map&lt;string, Engine2::Animation&gt;
++activity : State::Activity
+--
++boxCollider() : stbox::Rectangle
++getAnimation() : Engine2::Animation
++move(distance : stbox::Point, size : stbox::Math::Size&lt;int&gt;, origin : stbox::Point) : void
++setAngle(newAngle : double) : void
++setAnimation(animationId : string) : bool
++setColor(color : stbox::Color::RGBA) : void
++setScale(newScale : float) : void
++setSolid(isSolid : bool) : void
++size() : Size&lt;float&gt;
++str() : string
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>252</x>
+      <y>369</y>
+      <w>90</w>
+      <h>33</h>
+    </coordinates>
+    <panel_attributes>Example
+--
++m_dummy : SDL_FRect
+--
+Example()
+-render() : void
+-update() : void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>894</x>
+      <y>210</y>
+      <w>153</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>Game
+--
+-m_bkgId : string[]
+-m_bkgSpeed : int 
+-m_bulletCounter : int
+-m_bulletId : string
+-m_bulletIds : std::set&lt; string&gt;
+-m_bulletLock : bool
+-m_bulletSpeed : int
+-m_collisions  : int
+-m_gameOver : string
+-m_hits  : int
+-m_obstacleCounter : int
+-m_obstacleId: string
+-m_obstaclesIds std::set&lt;string&gt;
+-m_obstacleSpeed : int
+-m_playerEnergy  : int
+-m_playerId : string
+-m_playerSpeed : int
+-m_score : int
+-m_shoot : bool;
+--
+Game()
+-newObstacle() : void
+-render() : void
+-renderEnergyBar(position : stbox::Point, width : float, height : float);
+-update() : void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>288</x>
+      <y>333</y>
+      <w>9</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>162</x>
+      <y>333</y>
+      <w>9</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;120.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>195</y>
+      <w>63</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>597</x>
+      <y>534</y>
+      <w>12</w>
+      <h>39</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>20.0;10.0;10.0;110.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>645</x>
+      <y>498</y>
+      <w>36</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>100.0;10.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>855</x>
+      <y>264</y>
+      <w>45</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;130.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>435</x>
+      <y>360</y>
+      <w>72</w>
+      <h>57</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;namespace&gt;&gt;
+State
+--
++Activity : enum class
++Animation : enum class
++Behavior : enum class
++Common : enum class
++Difficully : enum class
++Game : enum class
++Input : enum class
++Level : enum class</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>789</x>
+      <y>393</y>
+      <w>66</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;namespace&gt;&gt;
+stbox
+--
++Text : class
++Math : class
++Check : class
++Color : class
++Point : class
++Base : class
++Line : class
++Triangle : class
++Rectangle : class
++RegularPolygon : class
++Ellipse : class
++Circle : class
++IrregularPolygon : class
++IO : class
++Console : class</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>267</y>
+      <w>63</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;420.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>348</x>
+      <y>333</y>
+      <w>93</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>290.0;200.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>465</x>
+      <y>414</y>
+      <w>99</w>
+      <h>231</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;310.0;750.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>753</x>
+      <y>480</y>
+      <w>72</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>220.0;10.0;10.0;530.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>813</x>
+      <y>339</y>
+      <w>9</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;180.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>396</y>
+      <w>63</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>660</x>
+      <y>393</y>
+      <w>135</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>430.0;140.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>
