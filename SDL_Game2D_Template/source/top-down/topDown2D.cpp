@@ -54,6 +54,11 @@ Game::Game() : Engine2(854, 480, "Game Test")
         newObstacle();
     }
 
+    // Load Audio
+    loadSound("alert", "resources/alert.mp3");
+    loadSound("shot", "resources/alert.mp3");
+    loadSound("explosion", "resources/alert.mp3");
+
     // Load and configure resources.
     auto font = "NotoSansBlack";
     loadFont(font, "resources/NotoSans-Black.ttf");
@@ -217,6 +222,7 @@ void Game::update()
         m_bulletIds.emplace(bulletId);
         m_bulletLock = true;
         m_bulletCounter++;
+        playAudio("shot");
     }
 
     // Update Obstacle.
@@ -231,6 +237,7 @@ void Game::update()
             m_collisions++;
             m_playerEnergy -= 5;
             m_score -= 5;
+            playAudio("alert");
             if (m_playerEnergy < 0) {
                 setGameState(State::Game::gameOver);
                 viewBoxCollider(false);
@@ -253,6 +260,7 @@ void Game::update()
                         m_bulletLock = false;
                         m_score += 10;
                         m_hits++;
+                        playAudio("explosion");
                     }
                     animBullet.position.Y.value -= m_bulletSpeed * performanceReport().deltaTime;
                     if (animBullet.animation.frame == 1) {

@@ -16,6 +16,7 @@ file(GLOB SOURCES
 file(GLOB RESOURCE_FILES
     "../../resources/fonts/*.ttf"
     "../../resources/images/*.png"
+    "../../resources/audio/*.mp3"
 )
 
 add_executable(

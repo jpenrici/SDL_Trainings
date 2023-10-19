@@ -76,6 +76,15 @@ void Engine::initialize()
         inform({"Failed to initialize SDL TTF!\n", TTF_GetError()});
     }
 
+    inform("Initialize SDL Mixer to MP3 audio!");
+    if (Mix_Init(MIX_INIT_MP3) == 0) {
+        inform({"Failed to initialize SDL Mixer!\n", Mix_GetError()});
+    }
+    inform("Open the default audio device for playback!");
+    if (Mix_OpenAudio(44100, MIX_INIT_MP3, 2, 2048) < 0) {
+        inform({"Failed to open default audio device!\n", Mix_GetError()});
+    }
+
     m_gamePerformance.ticks = SDL_GetTicks64();
 }
 
@@ -273,6 +282,19 @@ void Engine::finalize()
     quit();
     inform("Free objects!");
 
+    // Free audio.
+    for (auto &audio : m_songs) {
+        Mix_FreeMusic(audio.second);
+        audio.second = nullptr;
+    }
+    for (auto &audio : m_sounds) {
+        Mix_FreeChunk(audio.second);
+        audio.second = nullptr;
+    }
+    m_songs.clear();
+    m_sounds.clear();
+    inform("Free Audios!");
+
     // Free renderer.
     SDL_DestroyRenderer(m_renderer);
     m_renderer = nullptr;
@@ -286,6 +308,7 @@ void Engine::finalize()
     // Exit.
     TTF_Quit();
     IMG_Quit();
+    Mix_Quit();
     SDL_Quit();
     inform("Game finished!");
 }
@@ -356,6 +379,11 @@ auto Engine::loadFont(const std::string &id, const std::string &filename) -> boo
         return false;
     }
 
+    if (textFontExists(id)) {
+        inform("Font ID: " + id + ", already exists!");
+        return false;
+    }
+
     int fontSize = 12;
     auto *font = TTF_OpenFont(filename.c_str(), fontSize);
     if (font == nullptr) {
@@ -363,13 +391,56 @@ auto Engine::loadFont(const std::string &id, const std::string &filename) -> boo
         return false;
     }
 
-    if (textFontExists(id)) {
-        inform("Font ID: " + id + ", already exists!");
+    m_fonts[id] = font;
+    inform("Added: Font [" + id + ", " + std::to_string(fontSize) + " pt], " + filename);
+
+    return true;
+}
+
+auto Engine::loadMusic(const std::string &id, const std::string &filename) -> bool
+{
+    if (id.empty() || filename.empty()) {
+        inform("Empty Music ID or font file path!");
         return false;
     }
 
-    m_fonts[id] = font;
-    inform("Added: Font [" + id + ", " + std::to_string(fontSize) + " pt], " + filename);
+    if (musicExists(id)) {
+        inform("Music ID: " + id + ", already exists!");
+        return false;
+    }
+
+    auto *audio = Mix_LoadMUS(filename.c_str());
+    if (audio == nullptr) {
+        inform({"Music ID: " + id + ", failed to open file!\n", TTF_GetError()});
+        return false;
+    }
+
+    m_songs[id] = audio;
+    inform("Added: Music [" + id + "], " + filename);
+
+    return true;
+}
+
+auto Engine::loadSound(const std::string &id, const std::string &filename) -> bool
+{
+    if (id.empty() || filename.empty()) {
+        inform("Empty Sound ID or font file path!");
+        return false;
+    }
+
+    if (soundExists(id)) {
+        inform("Sound ID: " + id + ", already exists!");
+        return false;
+    }
+
+    auto *audio = Mix_LoadWAV(filename.c_str());
+    if (audio == nullptr) {
+        inform({"Sound ID: " + id + ", failed to open file!\n", TTF_GetError()});
+        return false;
+    }
+
+    m_sounds[id] = audio;
+    inform("Added: Sound [" + id + "], " + filename);
 
     return true;
 }
@@ -535,6 +606,31 @@ auto Engine::textureSize(const std::string &id) -> std::array<int, 2>
 
     return {width, height};
 }
+
+auto Engine::playAudio(const std::string &id, bool isMusic) -> bool
+{
+    if (isMusic && musicExists(id)) {
+        return true;
+    }
+    else if (soundExists(id)) {
+        Mix_PlayChannel(-1, m_sounds[id], 0);
+        return true;
+    }
+
+    return false;
+}
+
+
+auto Engine::musicExists(const std::string &id) -> bool
+{
+    return m_songs.contains(id);
+}
+
+auto Engine::soundExists(const std::string &id) -> bool
+{
+    return m_sounds.contains(id);
+}
+
 
 void Engine::setGameState(State::Game state)
 {

@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 
 #include <array>
@@ -88,8 +89,14 @@ protected:
     virtual auto performanceReport() -> Performance final;
 
     virtual auto loadFont(const std::string &id, const std::string &filename) -> bool final;
+    virtual auto loadMusic(const std::string &id, const std::string &filename) -> bool final;
+    virtual auto loadSound(const std::string &id, const std::string &filename) -> bool final;
     virtual auto loadTexture(const std::string &id, const std::string &filename) -> bool final;
     virtual auto loadTexture(const std::string &id, int rows, int  columns, const std::string &filename) -> bool final;
+
+    virtual auto musicExists(const std::string &id) -> bool final;
+    virtual auto playAudio(const std::string &id, bool isMusic = false) -> bool final;
+    virtual auto soundExists(const std::string &id) -> bool final;
 
     virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
                                 const SDL_Color &foreground, int fontSize, double angle, float scale, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
@@ -112,8 +119,10 @@ private:
 
     SDL_Color m_bkgColor{0, 0, 0, 255};
 
-    std::map<std::string, TTF_Font *> m_fonts;
+    std::map<std::string, Mix_Chunk *> m_sounds;
+    std::map<std::string, Mix_Music *> m_songs;
     std::map<std::string, SDL_Texture *> m_textures;
+    std::map<std::string, TTF_Font *> m_fonts;
 
     // Flag for external Game Loop control.
     bool m_externalControl{false};

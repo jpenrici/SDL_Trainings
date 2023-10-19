@@ -4,25 +4,27 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>105</x>
-      <y>60</y>
-      <w>402</w>
-      <h>276</h>
+      <x>177</x>
+      <y>81</y>
+      <w>408</w>
+      <h>306</h>
     </coordinates>
     <panel_attributes>Engine
 --
 -m_bkgColor : SDL_Color
 -m_event : SDL_Event
 -m_externalControl : bool
--m_fonts : map&lt;string, TTF_Font*&gt;
+-m_fonts : map&lt;string, TTF_Font *&gt;
 -m_gamePerformance : Performance
 -m_gameState : State::Game
 -m_inputState: State::Input
 -m_renderer : SDL_Renderer*
 -m_screenHeight : int
 -m_screenWidth : int
--m_textures : map&lt;string, SDL_Texture*&gt;
--m_window : SDL_Window*
+-m_songs : map&lt;string, Mix_Music *&gt;
+-m_sounds : map&lt;string, Mix_Chunk *&gt;
+-m_textures : map&lt;string, SDL_Texture *&gt;
+-m_window : SDL_Window *
 -Performance : struct
 --
 Engine(screenWidth : int, screenHeight : int, title : string &amp;)
@@ -47,15 +49,20 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 #inputState() : State::Input
 #inputStateEqual(state : State::Input) : bool
 #loadFont(id : string &amp;, filename : string &amp;) : bool
+#loadMusic(id : string &amp;, filename : string &amp;) : bool
+#loadSound(id : string &amp;, filename : string &amp;) : bool
 #loadTexture(id : string &amp;, filename : string &amp;) : bool
 #loadTexture(id : string &amp;, rows : int, columns : int, filename : string &amp;) : bool
+#musicExists(id : string &amp;) : bool
 #performanceReport() : Performance
+#playAudio(id : string &amp;, isMusic : bool) : bool
 #renderTextFont(fontId : string &amp;, text : string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, flip : SDL_RendererFlip) : bool
 #renderTexture(id : string &amp;) : bool
 #renderTexture(id : string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float,flip : SDL_RendererFlip) : bool
 #renderTexture(id : string &amp;, x : float, y : float,angle : double, scale : float) : bool
 #setBackgroundColor(color : SDL_Color) : void
 #setGameState(state : State::Game) : void
+#soundExists(id : string &amp;) : bool
 #template&lt;typename T = int&gt; auto windowHeight() : T
 #template&lt;typename T = int&gt; auto windowSize() : std::array&lt;T, 2&gt;
 #template&lt;typename T = int&gt; auto windowWidth() : T
@@ -71,8 +78,8 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>561</x>
-      <y>54</y>
+      <x>633</x>
+      <y>87</y>
       <w>297</w>
       <h>288</h>
     </coordinates>
@@ -139,8 +146,8 @@ Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>105</x>
-      <y>369</y>
+      <x>177</x>
+      <y>402</y>
       <w>114</w>
       <h>33</h>
     </coordinates>
@@ -156,8 +163,8 @@ Performance
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>561</x>
-      <y>351</y>
+      <x>633</x>
+      <y>384</y>
       <w>102</w>
       <h>93</h>
     </coordinates>
@@ -185,8 +192,8 @@ Text
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>675</x>
-      <y>465</y>
+      <x>747</x>
+      <y>498</y>
       <w>60</w>
       <h>51</h>
     </coordinates>
@@ -206,8 +213,8 @@ SpriteSheet
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>558</x>
-      <y>465</y>
+      <x>630</x>
+      <y>498</y>
       <w>90</w>
       <h>72</h>
     </coordinates>
@@ -232,8 +239,8 @@ Animation
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>558</x>
-      <y>567</y>
+      <x>630</x>
+      <y>600</y>
       <w>198</w>
       <h>132</h>
     </coordinates>
@@ -271,8 +278,8 @@ Sprite
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>252</x>
-      <y>369</y>
+      <x>324</x>
+      <y>402</y>
       <w>90</w>
       <h>33</h>
     </coordinates>
@@ -289,8 +296,8 @@ Example()
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>894</x>
-      <y>210</y>
+      <x>966</x>
+      <y>243</y>
       <w>153</w>
       <h>132</h>
     </coordinates>
@@ -327,41 +334,41 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>288</x>
-      <y>333</y>
+      <x>360</x>
+      <y>384</y>
       <w>9</w>
-      <h>42</h>
+      <h>24</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>162</x>
-      <y>333</y>
+      <x>234</x>
+      <y>384</y>
       <w>9</w>
-      <h>42</h>
+      <h>24</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;120.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>504</x>
-      <y>195</y>
-      <w>63</w>
+      <x>582</x>
+      <y>228</y>
+      <w>57</w>
       <h>9</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;190.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;170.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>597</x>
-      <y>534</y>
+      <x>669</x>
+      <y>567</y>
       <w>12</w>
       <h>39</h>
     </coordinates>
@@ -371,8 +378,8 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>645</x>
-      <y>498</y>
+      <x>717</x>
+      <y>531</y>
       <w>36</w>
       <h>12</h>
     </coordinates>
@@ -382,8 +389,8 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>855</x>
-      <y>264</y>
+      <x>927</x>
+      <y>297</y>
       <w>45</w>
       <h>9</h>
     </coordinates>
@@ -393,8 +400,8 @@ Game()
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>435</x>
-      <y>360</y>
+      <x>507</x>
+      <y>393</y>
       <w>72</w>
       <h>57</h>
     </coordinates>
@@ -414,8 +421,8 @@ State
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>789</x>
-      <y>393</y>
+      <x>861</x>
+      <y>426</y>
       <w>66</w>
       <h>90</h>
     </coordinates>
@@ -442,8 +449,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>504</x>
-      <y>267</y>
+      <x>576</x>
+      <y>300</y>
       <w>63</w>
       <h>132</h>
     </coordinates>
@@ -453,19 +460,19 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>348</x>
-      <y>333</y>
+      <x>420</x>
+      <y>384</y>
       <w>93</w>
-      <h>66</h>
+      <h>48</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>290.0;200.0;10.0;10.0</additional_attributes>
+    <additional_attributes>290.0;140.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>465</x>
-      <y>414</y>
+      <x>537</x>
+      <y>447</y>
       <w>99</w>
       <h>231</h>
     </coordinates>
@@ -475,8 +482,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>753</x>
-      <y>480</y>
+      <x>825</x>
+      <y>513</y>
       <w>72</w>
       <h>165</h>
     </coordinates>
@@ -486,8 +493,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>813</x>
-      <y>339</y>
+      <x>885</x>
+      <y>372</y>
       <w>9</w>
       <h>60</h>
     </coordinates>
@@ -497,8 +504,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>504</x>
-      <y>396</y>
+      <x>576</x>
+      <y>429</y>
       <w>63</w>
       <h>9</h>
     </coordinates>
@@ -508,8 +515,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>393</y>
+      <x>732</x>
+      <y>426</y>
       <w>135</w>
       <h>48</h>
     </coordinates>
