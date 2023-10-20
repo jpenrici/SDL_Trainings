@@ -38,7 +38,7 @@ public:
     virtual void setAsExternalGameloopControl() final;
 
     // Log
-    virtual void inform(const std::string &message) final;
+    static void inform(const std::string &message);
 
     // More than one line.
     virtual void inform(std::initializer_list<std::string> messages, bool multipleLines = false) final;
@@ -105,11 +105,13 @@ protected:
     virtual void stopMusic() final;
 
     virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
-                                const SDL_Color &foreground, int fontSize, double angle, float scale, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
+                                const SDL_Color &foreground, int fontSize, double angle, float scale,
+                                Uint8 opacity, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
 
     virtual auto renderTexture(const std::string &id) -> bool final;
-    virtual auto renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, double angle, float scale, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
-    virtual auto renderTexture(const std::string &id, float x, float y, double angle, float scale) -> bool final;
+    virtual auto renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
+    virtual auto renderTexture(const std::string &id, float x, float y, double angle, float scale, Uint8 opacity) -> bool final;
+
 
     virtual auto textFont(const std::string &id) -> TTF_Font *final;
     virtual auto textFontExists(const std::string &id) -> bool final;
@@ -158,7 +160,7 @@ private:
     virtual void quit()   { /* Reserved for custom code for freeing/destroying SDL objects. */ };
 
     // Render
-    virtual auto renderTexture(SDL_Texture *texture, SDL_Rect clip, SDL_FRect box, double angle, float scale, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
+    virtual auto renderTexture(SDL_Texture *texture, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
 };
 
 #endif

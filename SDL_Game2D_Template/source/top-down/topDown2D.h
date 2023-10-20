@@ -1,6 +1,7 @@
 #ifndef TOPDOWN2D_H
 #define TOPDOWN2D_H
 
+#include <array>
 #include <set>
 
 #include "../../source/engine/engine2.h"
@@ -11,9 +12,13 @@ public:
     Game();
 
 private:
+    // Layers
+    enum Layer {BACKGROUND = -4, SCENE, OBSTACLES, PLAYER, TEXT, TOP};
+
+    // Sprites
     std::string m_gameOver{"GameOver"};
 
-    std::string m_bkgId[3] {"Background", "Background1", "Background2"};
+    std::array<std::string, 3> m_bkgId {"Background", "Background1", "Background2"};
     int m_bkgSpeed;
 
     std::string m_playerId{"Player"};
@@ -27,7 +32,6 @@ private:
     std::string m_bulletId{"Bullet"};
     std::set<std::string> m_bulletIds;
     bool m_bulletLock;
-    bool m_shoot;
     int m_bulletCounter;
     int m_bulletSpeed;
 
@@ -38,8 +42,9 @@ private:
     int m_score{0};
 
     // Game
+    bool mute{false};
     void newObstacle();
-    void renderEnergyBar(Position position, float width, float height);
+    void renderBar(stbox::Rectangle rectangle, RGBA color);
 
     void render() final;
     void update() final;

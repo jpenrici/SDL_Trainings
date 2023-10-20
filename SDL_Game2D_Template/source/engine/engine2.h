@@ -7,10 +7,9 @@
 #include "engine.h"
 #include "./common/smallToolBox.h"
 
-#define BoxCollider stbox::Rectangle
-#define Position    stbox::Point
-#define RGBA        stbox::Color::RGBA
-#define Size        stbox::Math::Size
+using BoxCollider = stbox::Rectangle;
+using Position    = stbox::Point;
+using RGBA        = stbox::Color::RGBA;
 
 
 // SDL Game
@@ -28,6 +27,7 @@ private:
         Position position{0, 0};
         RGBA foreground{255, 255, 255};
         double angle{0};
+        float opacity{255};
         float scale{0};
         int fontSize{12};
         int layer{0};
@@ -36,6 +36,7 @@ private:
         void move(Position distance);
         void setAngle(double newAngle);
         void setColor(RGBA color);
+        void setOpacity(Uint8 opacityPercentage);
         void setScale(float newScale);
     };
 
@@ -73,7 +74,7 @@ private:
         bool solid{false};
         double angle{0};
         float height;
-        float opacity{100};
+        float opacity{255};
         float scale{0};
         float width;
         int layer{0};
@@ -82,19 +83,24 @@ private:
         State::Activity activity{State::Activity::disabled};
 
         auto boxCollider() -> BoxCollider;
-        auto size() -> Size<float>;
+        auto size() -> stbox::Math::Size<float>;
+        auto center() -> Position;
 
         auto getAnimation() -> Animation;
         auto setAnimation(std::string animationId) -> bool;
 
         void move(Position distance);
-        void move(Position distance, Size<int> size, Position origin = Position{0, 0});
+        void move(Position distance, stbox::Rectangle limit);
+        void move(double distance, double angle);
+        void move4directions(double distance, stbox::Rectangle limit, State::Input state);
+        void move8directions(double distance, stbox::Rectangle rectangle, State::Input state);
         void moveHorizontal(double distance);
         void moveTo(Position newPosition, double limit, bool isGreater, bool vertically);
         void moveVertical(double distance);
         void rotate(double rotationAngle);
         void setAngle(double newAngle);
         void setColor(RGBA color);
+        void setOpacity(Uint8 opacityPercentage);
         void setScale(float newScale);
         void setSolid(bool isSolid);
 
@@ -104,9 +110,9 @@ private:
 protected:
     // Window
     template<typename T>
-    auto windowSize() -> Size<T>
+    auto windowSize() -> stbox::Math::Size<T>
     {
-        return {windowWidth(), windowHeight()};
+        return {windowWidth<T>(), windowHeight<T>()};
     }
 
     // Text
@@ -117,6 +123,7 @@ protected:
     virtual auto setTextColor(std::string id, RGBA foreground, bool quiet = true) -> bool final;
     virtual auto setTextFont(std::string id, std::string fontId, bool quiet = true) -> bool final;
     virtual auto setTextLayer(std::string id, int layer, bool quiet = true) -> bool final;
+    virtual auto setTextOpacity(std::string id, Uint8 opacity, bool quiet = true) -> bool final;
     virtual auto setTextPosition(std::string id, Position position, bool quiet = true) -> bool final;
     virtual auto setTextScale(std::string id, float scale, bool quiet = true) -> bool final;
     virtual auto setTextSize(std::string id, int size, bool quiet = true) -> bool final;
@@ -133,11 +140,14 @@ protected:
     virtual auto setSpriteBoxCollider(std::string id, BoxCollider box, bool quiet = true) -> bool final;
     virtual auto setSpriteBoxCollider(std::string id, float width, float height, bool quiet = true) -> bool final;
     virtual auto setSpriteByIndex(std::string id, int index, bool quiet = true) -> bool final;
+    virtual auto setSpriteEmptyBoxCollider(std::string id, Position position, bool quiet = true) -> bool final;
+    virtual auto setSpriteEmptyBoxCollider(std::string id, bool quiet = true) -> bool final;
     virtual auto setSpriteLayer(std::string id, int layer, bool quiet = true) -> bool final;
+    virtual auto setSpriteOpacity(std::string id, Uint8 opacity, bool quiet = true) -> bool final;
     virtual auto setSpritePosition(std::string id, Position position, bool quiet = true) -> bool final;
     virtual auto setSpriteScale(std::string id, float scale, bool quiet = true) -> bool final;
     virtual auto setSpriteSolid(std::string id, bool isSolid, bool quiet = true) -> bool final;
-    virtual auto spriteSheetSize(std::string id, bool quiet = true) -> Size<float> final;
+    virtual auto spriteSheetSize(std::string id, bool quiet = true) -> stbox::Math::Size<float> final;
 
     virtual auto eraseSprite(std::string id, bool quiet = true) -> bool final;
     virtual auto swapSprite(std::string id, Sprite sprite, bool quiet = true) -> bool final;

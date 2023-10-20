@@ -120,13 +120,14 @@ auto Engine2::newSprite(std::string id, std::string spriteSheetID, float x, floa
     Sprite sprite;
     sprite.id = id;
     sprite.spriteSheetId = spriteSheetID;
-    sprite.position = {x, y};
-    sprite.height = height;
-    sprite.width = width;
     sprite.angle = 0;
+    sprite.height = height;
     sprite.layer = 0;
+    sprite.opacity = 255;
+    sprite.position = {x, y};
     sprite.scale = 1;
     sprite.solid = true;
+    sprite.width = width;
     sprite.animation = animation;
     sprite.animations[animation.id] = animation;
     sprite.activity = State::Activity::activated;
@@ -293,6 +294,16 @@ auto Engine2::setSpriteBoxCollider(std::string id, float width, float height, bo
     return false;
 }
 
+auto Engine2::setSpriteEmptyBoxCollider(std::string id, Position position, bool quiet) -> bool
+{
+    return setSpriteBoxCollider(id, {position, 0, 0}, quiet);
+}
+
+auto Engine2::setSpriteEmptyBoxCollider(std::string id, bool quiet) -> bool
+{
+    return setSpriteBoxCollider(id, 0, 0, quiet);
+}
+
 auto Engine2::setSpriteByIndex(std::string id, int index, bool quiet) -> bool
 {
     if (!m_sprites.contains(id)) {
@@ -357,6 +368,20 @@ auto Engine2::setSpriteSolid(std::string id, bool isSolid, bool quiet) -> bool
     }
 
     m_sprites[id].solid = isSolid;
+
+    return true;
+}
+
+auto Engine2::setSpriteOpacity(std::string id, Uint8 opacityPercentage, bool quiet) -> bool
+{
+    if (!m_sprites.contains(id)) {
+        if (!quiet) {
+            inform("Sprite ID: " + id + ", not found! Unable to change sprite opacity!");
+        }
+        return false;
+    }
+
+    m_sprites[id].opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;
 
     return true;
 }
@@ -471,12 +496,26 @@ auto Engine2::setTextScale(std::string id, float scale, bool quiet) -> bool
 {
     if (!m_texts.contains(id)) {
         if (!quiet) {
-            inform("Text ID: " + id + ", not found! Unable to change sprite scale!");
+            inform("Text ID: " + id + ", not found! Unable to change text scale!");
         }
         return false;
     }
 
     m_texts[id].scale = scale;
+
+    return true;
+}
+
+auto Engine2::setTextOpacity(std::string id, Uint8 opacityPercentage, bool quiet) -> bool
+{
+    if (!m_texts.contains(id)) {
+        if (!quiet) {
+            inform("Text ID: " + id + ", not found! Unable to change text opacity!");
+        }
+        return false;
+    }
+
+    m_texts[id].opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;
 
     return true;
 }
@@ -577,17 +616,22 @@ auto Engine2::Sprite::boxCollider() -> BoxCollider
     return {position, width, height};
 }
 
+auto Engine2::Sprite::center() -> Position
+{
+    return {position.X.value +  width / 2, position.Y.value + height / 2};
+}
+
 auto Engine2::Sprite::getAnimation() -> Animation
 {
     return animation;
 }
 
-void Engine2::Sprite::move(Position distance, Size<int> size, Position origin)
+void Engine2::Sprite::move(Position distance, stbox::Rectangle limit)
 {
     auto x = position.X.value + distance.X.value;
     auto y = position.Y.value + distance.Y.value;
-    position.X.value += (x < origin.X.value || x > (size.width - width)) ? 0 : distance.X.value;
-    position.Y.value += (y < origin.Y.value || y > (size.height - height)) ? 0 : distance.Y.value;
+    position.X.value += (x < limit.origin.X.value || x > (limit.width() - width)) ? 0 : distance.X.value;
+    position.Y.value += (y < limit.origin.Y.value || y > (limit.height() - height)) ? 0 : distance.Y.value;
 }
 
 void Engine2::Sprite::move(Position distance)
@@ -621,12 +665,59 @@ void Engine2::Sprite::moveTo(Position newPosition, double limit, bool isGreater,
     }
 }
 
+void Engine2::Sprite::move(double distance, double angle)
+{
+    position = position.position(angle, distance);
+}
+
+void Engine2::Sprite::move4directions(double distance, stbox::Rectangle limit, State::Input state)
+{
+    switch (state) {
+    case State::Input::keyboard_up:
+        move({0, -distance}, limit);
+        break;
+    case State::Input::keyboard_down:
+        move({0, distance}, limit);
+        break;
+    case State::Input::keyboard_right:
+        move({distance, 0}, limit);
+        break;
+    case State::Input::keyboard_left:
+        move({-distance, 0}, limit);
+        break;
+    default:
+        break;
+    }
+}
+
+void Engine2::Sprite::move8directions(double distance, stbox::Rectangle limit, State::Input state)
+{
+    move4directions(distance, limit, state);
+
+    switch (state) {
+    case State::Input::keyboard_up_rigth:
+        move({distance, -distance}, limit);
+        break;
+    case State::Input::keyboard_up_left:
+        move({-distance, -distance}, limit);
+        break;
+    case State::Input::keyboard_down_right:
+        move({distance, distance}, limit);
+        break;
+    case State::Input::keyboard_down_left:
+        move({-distance, distance}, limit);
+        break;
+    default:
+        break;
+    }
+}
+
 void Engine2::Sprite::rotate(double rotationAngle)
 {
     setAngle(angle + rotationAngle);
 }
 
-auto Engine2::Sprite::size() -> Size<float>
+auto Engine2::Sprite::size() -> stbox::Math::Size<float>
 {
     return {width, height};
 }
@@ -641,6 +732,11 @@ void Engine2::Sprite::setColor(RGBA color)
 {
     rgba = color;
     opacity = 100 / color.A;
+}
+
+void Engine2::Sprite::setOpacity(Uint8 opacityPercentage)
+{
+    opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;;
 }
 
 void Engine2::Sprite::setScale(float newScale)
@@ -753,6 +849,14 @@ auto Engine2::checkCollision(std::string spriteId1, std::string spriteId2, bool 
         return false;
     }
 
+    if (m_sprites[spriteId1].width <= 0 || m_sprites[spriteId1].height <= 0) {
+        return false;
+    }
+
+    if (m_sprites[spriteId2].width <= 0 || m_sprites[spriteId2].height <= 0) {
+        return false;
+    }
+
     // Option 1 - SDL_IntersectRect
     //SDL_Rect rect;
     //SDL_Rect box1{static_cast<int>(m_sprites[spriteId1].position.X.toInt()),
@@ -780,7 +884,7 @@ auto Engine2::spriteSheet(std::string id) -> std::tuple<SpriteSheet, bool>
     return {m_spriteSheets[id], true};
 }
 
-auto Engine2::spriteSheetSize(std::string id, bool quiet) -> Size<float>
+auto Engine2::spriteSheetSize(std::string id, bool quiet) -> stbox::Math::Size<float>
 {
     if (!m_spriteSheets.contains(id)) {
         inform("Image ID: " + id + ", not found! Return negative size! ");
@@ -803,6 +907,11 @@ void Engine2::Text::setAngle(double newAngle)
 void Engine2::Text::setColor(RGBA color)
 {
     foreground = color;
+}
+
+void Engine2::Text::setOpacity(Uint8 opacityPercentage)
+{
+    opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;;
 }
 
 void Engine2::Text::setScale(float newScale)
@@ -858,7 +967,7 @@ auto Engine2::renderSprite(Sprite sprite) -> bool
 
     SDL_Rect clip = {x, y, spriteSheet.spriteWidth, spriteSheet.spriteHeight};
     SDL_FRect box = {sprite.position.X.toFloat(), sprite.position.Y.toFloat(), sprite.width, sprite.height};
-    return renderTexture(sprite.spriteSheetId, clip, box, sprite.angle, sprite.scale);
+    return renderTexture(sprite.spriteSheetId, clip, box, sprite.angle, sprite.scale, sprite.opacity);
 }
 
 auto Engine2::renderText(std::string textId) -> bool
@@ -871,7 +980,8 @@ auto Engine2::renderText(std::string textId) -> bool
     if (m_texts[textId].activity == State::Activity::activated) {
         auto text = m_texts[textId];
         SDL_Color color = {text.foreground.R, text.foreground.G, text.foreground.B, text.foreground.A};
-        renderTextFont(text.fontId, text.text, {text.position.X.toFloat(), text.position.Y.toFloat()}, color, text.fontSize, 0, 1);
+        renderTextFont(text.fontId, text.text, {text.position.X.toFloat(), text.position.Y.toFloat()},
+                       color, text.fontSize, 0, 1, text.opacity);
     }
 
     return true;
@@ -896,8 +1006,10 @@ void Engine2::render()
                         SDL_RenderFillRectF(currentRenderer(), &box);
                     }
                     if (m_viewBoxCollider) {   // For need to see texture limits.
-                        SDL_SetRenderDrawColor(currentRenderer(), 255, 0, 0, 255);
-                        SDL_RenderDrawRectF(currentRenderer(), &box);
+                        if (sprite.width > 0 && sprite.height > 0) {
+                            SDL_SetRenderDrawColor(currentRenderer(), 255, 0, 0, 255);
+                            SDL_RenderDrawRectF(currentRenderer(), &box);
+                        }
                     }
                 }
             }
@@ -909,7 +1021,7 @@ void Engine2::render()
                 if (text.layer == layer) {
                     SDL_Color color = {text.foreground.R, text.foreground.G, text.foreground.B, text.foreground.A};
                     Engine::renderTextFont(text.fontId, text.text, {text.position.X.toFloat(), text.position.Y.toFloat()}, color,
-                                           text.fontSize, text.angle, text.scale);
+                                           text.fontSize, text.angle, text.scale, text.opacity);
                 }
             }
         }

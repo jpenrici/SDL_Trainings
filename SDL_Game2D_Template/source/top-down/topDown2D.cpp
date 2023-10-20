@@ -13,22 +13,24 @@ Game::Game() : Engine2(854, 480, "Game Test")
 
     // Background
     loadSpriteSheet(m_bkgId[0], "resources/background.png");
-    auto size = spriteSheetSize(m_bkgId[0]);
+    auto bkgSize = spriteSheetSize(m_bkgId[0]);
     m_bkgSpeed = 10;
 
     newSprite(m_bkgId[1], m_bkgId[0]);
-    setSpriteBoxCollider(m_bkgId[1], {{0, 0}, size.width, size.height});
-    setSpriteLayer(m_bkgId[1], -2);
+    setSpriteBoxCollider(m_bkgId[1], {{0, 0}, 0, bkgSize.height});
+    setSpriteLayer(m_bkgId[1], BACKGROUND);
+    setSpriteOpacity(m_bkgId[1], 50);
 
     newSprite(m_bkgId[2], m_bkgId[0]);
-    setSpriteBoxCollider(m_bkgId[2], {{0, -size.height}, size.width, size.height});
-    setSpriteLayer(m_bkgId[2], -2);
+    setSpriteBoxCollider(m_bkgId[2], {{0, -bkgSize.height}, 1, bkgSize.height});
+    setSpriteLayer(m_bkgId[2], BACKGROUND);
+    setSpriteOpacity(m_bkgId[2], 60);
 
     // Game Over
     loadSpriteSheet(m_gameOver, "resources/gameOver.png");
     newSprite(m_gameOver, m_gameOver);
     setSpritePosition(m_gameOver, {60, 50});
-    setSpriteLayer(m_gameOver, 10);
+    setSpriteLayer(m_gameOver, TOP);
     setSpriteActivity(m_gameOver, State::Activity::disabled);
 
     // Player
@@ -37,7 +39,7 @@ Game::Game() : Engine2(854, 480, "Game Test")
     newAnimation(m_playerId, m_playerId, {5, 1, 5, 3, 2, 4}, 8);
     setAnimation(m_playerId, m_playerId);
     setSpriteScale(m_playerId, 0.5);
-    setSpriteLayer(m_playerId, 1);
+    setSpriteLayer(m_playerId, PLAYER);
     m_playerSpeed = 380;
 
     // Bullet
@@ -64,7 +66,7 @@ Game::Game() : Engine2(854, 480, "Game Test")
     auto font = "NotoSansBlack";
     loadFont(font, "resources/NotoSans-Black.ttf");
 
-    // Texts
+    // Texts - Layer 0
     newText("Title", font, "Top Down", {windowWidth<float>() - 100, 10}, white, 20);
     newText("Dt", font, "", {150, 10}, green, 14);
     newText("FPS", font, "", {150, 25}, green, 14);
@@ -81,37 +83,33 @@ Game::Game() : Engine2(854, 480, "Game Test")
     newText("Help", font, str, {5, windowHeight<float>() - 20}, white, 14);
 
     setTextActivity("Pause", State::Activity::disabled);
-
+    setTextOpacity("Player", 50);
     setGameState(State::Game::playing);
-
-    playMusic("music");
+    if (!mute) {
+        playMusic("music");
+    }
 }
 
 void Game::newObstacle()
 {
     std::string obstacleId = m_obstacleId + std::to_string(m_obstacleCounter++);
-    newSprite(obstacleId, m_obstacleId, {{
-            stbox::Math::randomize<float>(0, windowWidth()),
-            -stbox::Math::randomize<float>(100, 300)
-        }, 48, 48
-    });
+    newSprite(obstacleId, m_obstacleId, {{stbox::Math::randomize<float>(windowWidth()), -stbox::Math::randomize<float>(100, 300)}, 48, 48});
+    setSpriteLayer(obstacleId, PLAYER);
     if (m_obstacleCounter % 5 != 0) {
-        setSpriteBoxCollider(obstacleId, 10, 10);
+        setSpriteEmptyBoxCollider(obstacleId);
+        setSpriteOpacity(obstacleId, 80);
         setSpriteByIndex(obstacleId, 1);
-        setSpriteLayer(obstacleId, -1);
+        setSpriteLayer(obstacleId, OBSTACLES);
         setSpriteScale(obstacleId, stbox::Math::randomize(2, 4) * 0.1);
-        setSpriteSolid(obstacleId, false);
-        setSpritePosition(obstacleId, {stbox::Math::randomize<float>(0, windowWidth()),
-                                       -stbox::Math::randomize<float>(0, 2 * windowHeight())
-                                      });
+        setSpritePosition(obstacleId, {stbox::Math::randomize<float>(windowWidth()), -stbox::Math::randomize<float>(2 * windowHeight())});
     }
     m_obstaclesIds.emplace(obstacleId);
 }
 
-void Game::renderEnergyBar(Position position, float width, float height)
+void Game::renderBar(stbox::Rectangle rectangle, RGBA color)
 {
-    SDL_FRect rect{position.X.toFloat(), position.Y.toFloat(), width, height};
-    SDL_SetRenderDrawColor(currentRenderer(), 255, 120, 0, 255);
+    SDL_FRect rect{rectangle.origin.X.toFloat(), rectangle.origin.Y.toFloat(), rectangle.width<float>(), rectangle.height<float>()};
+    SDL_SetRenderDrawColor(currentRenderer(), color.R, color.G, color.B, color.A);
     SDL_RenderFillRectF(currentRenderer(), &rect);
 }
 
@@ -120,15 +118,27 @@ void Game::render()
     Engine2::render();
 
     auto player = std::get<0>(sprite(m_playerId));
-    float width = m_playerEnergy < 0 ? 0 : (player.width - 10) * m_playerEnergy / 100;
-    renderEnergyBar({player.position.X.toFloat() + 5, player.position.Y.toFloat() + player.height + 5}, width, 5);
+    float width = m_playerEnergy < 0 ? 0 : player.width * m_playerEnergy / 100;
+    renderBar({{player.position.X.value + 5, player.position.Y.value + player.height + 5}, width, 5}, {255, 120, 0, 128});
 }
 
 void Game::update()
 {
     if (gameStateEqual(State::Game::gameOver)) {
         setSpriteActivity(m_gameOver, State::Activity::activated);
-        setAnimationSpeed(m_playerId, 0);
+        stopAnimation(m_playerId);
+        stopMusic();
+        if (inputStateEqual(State::Input::keyboard_space)) {
+            // Restart
+            playMusic("music");
+            setGameState(State::Game::playing);
+            setSpriteActivity(m_gameOver, State::Activity::disabled);
+            restartAnimation(m_playerId);
+            m_playerEnergy = 100;
+            m_collisions = 0;
+            m_hits = 0;
+            m_score = 0 ;
+        }
         return;
     }
 
@@ -154,14 +164,18 @@ void Game::update()
             setTextActivity("Pause", State::Activity::activated);
             stopAnimation(m_playerId);
             inform("Game paused!");
-            pauseMusic();
+            if (!mute) {
+                pauseMusic();
+            }
         }
         else if (gameStateEqual(State::Game::paused)) {
             setGameState(State::Game::playing);
             setTextActivity("Pause", State::Activity::disabled);
             restartAnimation(m_playerId);
             inform("Game playing!");
-            resumeMusic();
+            if (!mute) {
+                resumeMusic();
+            }
         }
     }
 
@@ -169,67 +183,21 @@ void Game::update()
         return;
     }
 
-    float step = m_playerSpeed * performanceReport().deltaTime;
-    auto winSize = windowSize<int>();
-    switch (inputState()) {
-    case State::Input::keyboard_space:
-        m_shoot = true;
-        break;
-    case State::Input::keyboard_up_space:
-        m_shoot = true;
-    case State::Input::keyboard_up:
-        player.move({0, -step}, winSize);
-        break;
-    case State::Input::keyboard_down_space:
-        m_shoot = true;
-    case State::Input::keyboard_down:
-        player.move({0, step}, winSize);
-        break;
-    case State::Input::keyboard_left_space:
-        m_shoot = true;
-    case State::Input::keyboard_left:
-        player.move({-step, 0}, winSize);
-        break;
-    case State::Input::keyboard_right_space:
-        m_shoot = true;
-    case State::Input::keyboard_right:
-        player.move({step, 0}, winSize);
-        break;
-    case State::Input::keyboard_up_rigth_space:
-        m_shoot = true;
-    case State::Input::keyboard_up_rigth:
-        player.move({step, -step}, winSize);
-        break;
-    case State::Input::keyboard_down_right_space:
-        m_shoot = true;
-    case State::Input::keyboard_down_right:
-        player.move({step, step}, winSize);
-        break;
-    case State::Input::keyboard_up_left_space:
-        m_shoot = true;
-    case State::Input::keyboard_up_left:
-        player.move({-step, -step}, winSize);
-        break;
-    case State::Input::keyboard_down_left_space:
-        m_shoot = true;
-    case State::Input::keyboard_down_left:
-        player.move({-step, step}, winSize);
-        break;
-    default:
-        m_shoot = false;
-        break;
-    }
+    player.move4directions(m_playerSpeed * performanceReport().deltaTime, {{0, 0},
+        windowWidth<double>(), windowHeight<double>()
+    }, inputState());
     setSpritePosition(player.id, player.position);
 
-    if (m_shoot && !m_bulletLock) {
+    if (inputStateEqual(State::Input::keyboard_space) && !m_bulletLock) {
         std::string bulletId = m_bulletId + std::to_string(m_bulletCounter % 10);
-        Position xy = {player.position.X.toFloat() + player.width / 2, player.position.Y.toFloat() + player.height / 2};
-        newSprite(bulletId, m_bulletId, {xy, 8, 16});
+        newSprite(bulletId, m_bulletId, {player.center(), 8, 16});
         setSpriteScale(bulletId, 0.3);
         m_bulletIds.emplace(bulletId);
         m_bulletLock = true;
         m_bulletCounter++;
-        playSound("shot");
+        if (!mute) {
+            playSound("shot");
+        }
     }
 
     // Update Obstacle.
@@ -244,7 +212,9 @@ void Game::update()
             m_collisions++;
             m_playerEnergy -= 5;
             m_score -= 5;
-            playSound("alert");
+            if (!mute) {
+                playSound("alert");
+            }
             if (m_playerEnergy < 0) {
                 setGameState(State::Game::gameOver);
                 viewBoxCollider(false);
@@ -267,9 +237,11 @@ void Game::update()
                         m_bulletLock = false;
                         m_score += 10;
                         m_hits++;
-                        playSound("explosion");
+                        if (!mute) {
+                            playSound("explosion");
+                        }
                     }
-                    bullet.moveVertical(-m_bulletSpeed * performanceReport().deltaTime);
+                    bullet.move(m_bulletSpeed * performanceReport().deltaTime, -90);
                     if (bullet.animation.frame == 1) {
                         setSpriteScale(bulletId, bullet.scale + 0.005);
                     }
@@ -285,12 +257,11 @@ void Game::update()
             obstacle.position = {stbox::Math::randomize<double>(0, windowWidth()), -stbox::Math::randomize<double>(100, 200)};
             obstacle.angle = stbox::Math::randomize(1, 360);
         }
-        setSpriteAngle(obstacle.id, obstacle.angle);
-        setSpritePosition(obstacle.id, obstacle.position);
+        swapSprite(obstacle.id, obstacle);
     }
 
     // Update Background
-    for (int i = 1; i < 3; ++i) {
+    for (int i = 1; i < m_bkgId.size(); ++i) {
         auto background = std::get<0>(sprite(m_bkgId[i]));
         background.moveVertical(m_bkgSpeed * performanceReport().deltaTime);
         background.moveTo({0, -background.height}, windowHeight(), true, true);

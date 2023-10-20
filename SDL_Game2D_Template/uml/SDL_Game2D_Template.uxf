@@ -40,7 +40,7 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 -quit() : void
 -render() : void
 -renderScreen() : void
--renderTexture(texture : SDL_Texture *, clip : SDL_Rect, box : SDL_FRect, angle : double, scale : float, flip : SDL_RendererFlip) : bool
+-renderTexture(texture : SDL_Texture *, clip : SDL_Rect, box : SDL_FRect, angle : double, scale : float, opacity : Uint8, flip : SDL_RendererFlip) : bool
 -update() : void
 -updateGameplay() : void
 #currentRenderer() : SDL_Renderer *
@@ -59,10 +59,10 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 #performanceReport() : Performance
 #playMusic(id : string &amp;) : bool
 #playSound(id : string &amp;) : bool
-#renderTextFont(fontId : string &amp;, text : string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, flip : SDL_RendererFlip) : bool
+#renderTextFont(fontId : string &amp;, text : string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, opacity : Uint8, flip : SDL_RendererFlip) : bool
 #renderTexture(id : string &amp;) : bool
-#renderTexture(id : string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float,flip : SDL_RendererFlip) : bool
-#renderTexture(id : string &amp;, x : float, y : float,angle : double, scale : float) : bool
+#renderTexture(id : string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float, opacity : Uint8, flip : SDL_RendererFlip) : bool
+#renderTexture(id : string &amp;, x : float, y : float,angle : double, scale : float, opacity : Uint8) : bool
 #resumeMusic() : void
 #setBackgroundColor(color : SDL_Color) : void
 #setGameState(state : State::Game) : void
@@ -124,7 +124,10 @@ Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
 #setSpriteBoxCollider(id : string, box : stbox::Rectangle, quiet : bool) : bool
 #setSpriteBoxCollider(id : string, width : float, height : float, quiet : bool) : bool
 #setSpriteByIndex(id : string, index : int, quiet : bool) : bool
+#setSpriteEmptyBoxCollider(id : string, position : stbox::Point, quiet : bool) : bool
+#setSpriteEmptyBoxCollider(id : string, quiet : bool) : bool
 #setSpriteLayer(id : string, layer : int, quiet : bool) : bool
+#setSpriteOpacity(id : string, Uint8 : opacityPercentage, quiet : bool) : bool
 #setSpritePosition(id : string, position : stbox::Point, quiet : bool) : bool
 #setSpriteScale(id : string, scale : float, quiet : bool) : bool
 #setSpriteSolid(id : string, isSolid : bool, quiet : bool) : bool
@@ -134,6 +137,7 @@ Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
 #setTextColor(id : string, foreground : stbox::Color::RGBA, quiet : bool) : bool
 #setTextFont(id : string, fontId : string, quiet : bool) : bool
 #setTextLayer(id : string, layer : int, quiet : bool) : bool
+#setTextOpacity(id : string, Uint8 : opacityPercentage, quiet : bool) : bool
 #setTextPosition(id : string, position : stbox::Point, quiet : bool) : bool
 #setTextScale(id : string, scale : float, quiet : bool) : bool
 #setTextSize(id : string, size : int, quiet : bool) : bool
@@ -185,6 +189,7 @@ Text
 +foreground : stbox::Color::RGBA
 +id : string
 +layer : int
++opacity : float
 +position : stbox::Point
 +scale : float
 +text : string
@@ -192,6 +197,7 @@ Text
 +move(distance : stbox::Point) : void
 +setAngle(newAngle : double) : void
 +setColor(color : stbox::Color::RGBA) : void
++setOpacity(opacityPercentage : Uint8) : void
 +setScale(newScale : float) : void
 </panel_attributes>
     <additional_attributes/>
@@ -270,9 +276,13 @@ Sprite
 +activity : State::Activity
 --
 +boxCollider() : stbox::Rectangle
++center() : stbox::Point
 +getAnimation() : Engine2::Animation
++move(distance : distance, angle : angle) : void
 +move(distance : stbox::Point) : void
-+move(distance : stbox::Point, size : stbox::Math::Size&lt;int&gt;, origin : stbox::Point) : void
++move(distance : stbox::Point, limit : stbox::Rectangle) : void
++move4directions(distance : double, limit : stbox::Rectangle, state : State::Input) : void
++move8directions(distance : double, limit : stbox::Rectangle, state : State::Input) : void
 +moveHorizontal(distance : double) : void
 +moveTo(newPosition : stbox::Point, limit : double, isGreater : bool, vertically : bool) : void
 +moveVertical(distance : double) : void
@@ -280,6 +290,7 @@ Sprite
 +setAngle(newAngle : double) : void
 +setAnimation(animationId : string) : bool
 +setColor(color : stbox::Color::RGBA) : void
++setOpacity(opacityPercentage : Uint8) : void
 +setScale(newScale : float) : void
 +setSolid(isSolid : bool) : void
 +size() : Size&lt;float&gt;
