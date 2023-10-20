@@ -87,7 +87,12 @@ private:
         auto getAnimation() -> Animation;
         auto setAnimation(std::string animationId) -> bool;
 
+        void move(Position distance);
         void move(Position distance, Size<int> size, Position origin = Position{0, 0});
+        void moveHorizontal(double distance);
+        void moveTo(Position newPosition, double limit, bool isGreater, bool vertically);
+        void moveVertical(double distance);
+        void rotate(double rotationAngle);
         void setAngle(double newAngle);
         void setColor(RGBA color);
         void setScale(float newScale);
@@ -125,8 +130,8 @@ protected:
     virtual auto newSprite(std::string id, std::string spriteSheetId, float x, float y, bool quiet = true) -> bool final;
     virtual auto setSpriteActivity(std::string id, State::Activity activity, bool quiet = true) -> bool final;
     virtual auto setSpriteAngle(std::string id, double angle, bool quiet = true) -> bool final;
-    virtual auto setSpriteBox(std::string id, BoxCollider box, bool quiet = true) -> bool final;
-    virtual auto setSpriteBox(std::string id, float width, float height, bool quiet = true) -> bool final;
+    virtual auto setSpriteBoxCollider(std::string id, BoxCollider box, bool quiet = true) -> bool final;
+    virtual auto setSpriteBoxCollider(std::string id, float width, float height, bool quiet = true) -> bool final;
     virtual auto setSpriteByIndex(std::string id, int index, bool quiet = true) -> bool final;
     virtual auto setSpriteLayer(std::string id, int layer, bool quiet = true) -> bool final;
     virtual auto setSpritePosition(std::string id, Position position, bool quiet = true) -> bool final;
@@ -144,8 +149,10 @@ protected:
     virtual auto checkCollision(std::string spriteId1, std::string spriteId2, bool quiet = true) -> bool final;
 
     virtual auto newAnimation(std::string id, std::string spriteId, std::vector<int> spriteNumbers, int timeInterval, bool quiet = true) -> bool final;
+    virtual auto restartAnimation(std::string id, bool quiet = true) -> bool final;
     virtual auto setAnimation(std::string id, std::string spriteId, bool quiet = true) -> bool final;
     virtual auto setAnimationSpeed(std::string id, int speed, bool quiet = true) -> bool final;
+    virtual auto stopAnimation(std::string id, bool quiet = true) -> bool final;
 
     virtual auto loadSprite(std::string id, const std::string &filename, bool quiet = true) -> bool final;
     virtual auto loadSpriteSheet(std::string id, const std::string &filename) -> bool final;

@@ -51,6 +51,7 @@ protected:
     // Game
     virtual auto inputState() -> State::Input final;
     virtual auto inputStateEqual(State::Input state) -> bool final;
+    virtual void inputClean() final;
     virtual void setGameState(State::Game state) final;
 
 private:
@@ -94,9 +95,14 @@ protected:
     virtual auto loadTexture(const std::string &id, const std::string &filename) -> bool final;
     virtual auto loadTexture(const std::string &id, int rows, int  columns, const std::string &filename) -> bool final;
 
-    virtual auto musicExists(const std::string &id) -> bool final;
-    virtual auto playAudio(const std::string &id, bool isMusic = false) -> bool final;
+    virtual auto playSound(const std::string &id) -> bool final;
     virtual auto soundExists(const std::string &id) -> bool final;
+
+    virtual auto musicExists(const std::string &id) -> bool final;
+    virtual auto playMusic(const std::string &id) -> bool final;
+    virtual void pauseMusic() final;
+    virtual void resumeMusic() final;
+    virtual void stopMusic() final;
 
     virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
                                 const SDL_Color &foreground, int fontSize, double angle, float scale, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;

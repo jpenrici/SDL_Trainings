@@ -262,7 +262,7 @@ auto Engine2::setSpriteAngle(std::string id, double angle, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setSpriteBox(std::string id, BoxCollider box, bool quiet) -> bool
+auto Engine2::setSpriteBoxCollider(std::string id, BoxCollider box, bool quiet) -> bool
 {
     if (!m_sprites.contains(id)) {
         if (!quiet) {
@@ -278,7 +278,7 @@ auto Engine2::setSpriteBox(std::string id, BoxCollider box, bool quiet) -> bool
     return false;
 }
 
-auto Engine2::setSpriteBox(std::string id, float width, float height, bool quiet) -> bool
+auto Engine2::setSpriteBoxCollider(std::string id, float width, float height, bool quiet) -> bool
 {
     if (!m_sprites.contains(id)) {
         if (!quiet) {
@@ -590,6 +590,42 @@ void Engine2::Sprite::move(Position distance, Size<int> size, Position origin)
     position.Y.value += (y < origin.Y.value || y > (size.height - height)) ? 0 : distance.Y.value;
 }
 
+void Engine2::Sprite::move(Position distance)
+{
+    position += distance;
+}
+
+void Engine2::Sprite::moveHorizontal(double distance)
+{
+    position.X.value += distance;
+}
+
+void Engine2::Sprite::moveVertical(double distance)
+{
+    position.Y.value += distance;
+}
+
+void Engine2::Sprite::moveTo(Position newPosition, double limit, bool isGreater, bool vertically)
+{
+    if (vertically && isGreater && position.Y.value >= limit) {
+        position = newPosition;
+    }
+    else if (vertically && !isGreater && position.Y.value <= limit) {
+        position = newPosition;
+    }
+    else if (!vertically && isGreater && position.X.value >= limit) {
+        position = newPosition;
+    }
+    else if (!vertically && !isGreater && position.X.value <= limit) {
+        position = newPosition;
+    }
+}
+
+void Engine2::Sprite::rotate(double rotationAngle)
+{
+    setAngle(angle + rotationAngle);
+}
+
 auto Engine2::Sprite::size() -> Size<float>
 {
     return {width, height};
@@ -597,6 +633,7 @@ auto Engine2::Sprite::size() -> Size<float>
 
 void Engine2::Sprite::setAngle(double newAngle)
 {
+    newAngle = newAngle > 360 ? 0 : newAngle;
     angle = newAngle;
 }
 
@@ -666,6 +703,34 @@ auto Engine2::Animation::str() -> std::string
 {
     return "Animation [" + id + ", Frame [" + std::to_string(frame) + "] Speed [" +
            std::to_string(speed) + "] Loop [ " + (loop ? "true" : "false") + "] ]";
+}
+
+auto Engine2::stopAnimation(std::string id, bool quiet) -> bool
+{
+    if (!m_sprites.contains(id)) {
+        if (!quiet) {
+            inform("Sprite ID: " + id + ", not found! Unable to stop animation!");
+        }
+        return false;
+    }
+
+    m_sprites[id].animation.setLoop(false);
+
+    return true;
+}
+
+auto Engine2::restartAnimation(std::string id, bool quiet) -> bool
+{
+    if (!m_sprites.contains(id)) {
+        if (!quiet) {
+            inform("Sprite ID: " + id + ", not found! Unable to restart animation!");
+        }
+        return false;
+    }
+
+    m_sprites[id].animation.setLoop(true);
+
+    return true;
 }
 
 auto Engine2::checkCollision(std::string spriteId1, std::string spriteId2, bool quiet) -> bool

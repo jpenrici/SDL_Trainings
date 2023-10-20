@@ -46,6 +46,7 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 #currentRenderer() : SDL_Renderer *
 #gameState() : State::Game
 #gameTitle() : string
+#inputClean() : void
 #inputState() : State::Input
 #inputStateEqual(state : State::Input) : bool
 #loadFont(id : string &amp;, filename : string &amp;) : bool
@@ -54,15 +55,19 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 #loadTexture(id : string &amp;, filename : string &amp;) : bool
 #loadTexture(id : string &amp;, rows : int, columns : int, filename : string &amp;) : bool
 #musicExists(id : string &amp;) : bool
+#pauseMusic() : void
 #performanceReport() : Performance
-#playAudio(id : string &amp;, isMusic : bool) : bool
+#playMusic(id : string &amp;) : bool
+#playSound(id : string &amp;) : bool
 #renderTextFont(fontId : string &amp;, text : string &amp;, position : const SDL_FPoint &amp;, foreground : const SDL_Color &amp;, fontSize : int, angle : double, scale : float, flip : SDL_RendererFlip) : bool
 #renderTexture(id : string &amp;) : bool
 #renderTexture(id : string &amp;, clip : SDL_Rect,box : SDL_FRect,angle : double, scale : float,flip : SDL_RendererFlip) : bool
 #renderTexture(id : string &amp;, x : float, y : float,angle : double, scale : float) : bool
+#resumeMusic() : void
 #setBackgroundColor(color : SDL_Color) : void
 #setGameState(state : State::Game) : void
 #soundExists(id : string &amp;) : bool
+#stopMusic() : void
 #template&lt;typename T = int&gt; auto windowHeight() : T
 #template&lt;typename T = int&gt; auto windowSize() : std::array&lt;T, 2&gt;
 #template&lt;typename T = int&gt; auto windowWidth() : T
@@ -90,10 +95,10 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 -m_spriteSheets : std::map&lt;string, SpriteSheet&gt;
 -m_texts : std::map&lt;string, Text&gt;
 -m_viewBoxCollider : bool
--Animation : struct 
--Sprite : struct 
--SpriteSheet : struct 
--Text : struct 
+-Animation : struct
+-Sprite : struct
+-SpriteSheet : struct
+-Text : struct
 --
 Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
 -newSprite(id : string, spriteSheetID : string, x : float, y : float, width : float, height : float, quiet : bool) : bool
@@ -111,12 +116,13 @@ Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
 #render() : void
 #renderSprite(sprite : Sprite) : bool
 #renderText(textId : string) : bool
+#restartAnimation(id : string, quiet : bool) : bool
 #setAnimation(id : string, spriteId : string, quiet : bool) : bool
 #setAnimationSpeed(id : string, spped : int, quiet : bool) : bool
 #setSpriteActivity(id : string, activity : State::Activity, quiet : bool) : bool
 #setSpriteAngle(id : string, angle : double, quiet : bool) : bool
-#setSpriteBox(id : string, box : stbox::Rectangle, quiet : bool) : bool
-#setSpriteBox(id : string, width : float, height : float, quiet : bool) : bool
+#setSpriteBoxCollider(id : string, box : stbox::Rectangle, quiet : bool) : bool
+#setSpriteBoxCollider(id : string, width : float, height : float, quiet : bool) : bool
 #setSpriteByIndex(id : string, index : int, quiet : bool) : bool
 #setSpriteLayer(id : string, layer : int, quiet : bool) : bool
 #setSpritePosition(id : string, position : stbox::Point, quiet : bool) : bool
@@ -132,12 +138,13 @@ Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
 #setTextScale(id : string, scale : float, quiet : bool) : bool
 #setTextSize(id : string, size : int, quiet : bool) : bool
 #sprite(id : string, quiet : bool) : tuple&lt;Sprite, bool&gt;;
+#spriteSheetSize(id : string, quiet : bool) : stbox::Math::Size&lt;float&gt;
 #sprites() : map&lt;string, Sprite&gt;;
-#spriteSheetSize(id : string, quiet : bool) : stbox::Math::Size&lt;float&gt;;
+#stopAnimation(id : string, quiet : bool) : bool
 #swapSprite(id : string, sprite : Sprite, quiet : bool) : bool
-#template&lt;typename T&gt;; auto windowSize() : stbox::Math::Size&lt;T&gt;;
+#template&lt;typename T&gt;; auto windowSize() : stbox::Math::Size&lt;T&gt;
 #text(id : string) : Text
-#texts() : map&lt;string, Text&gt;;
+#texts() : map&lt;string, Text&gt;
 #totalSprites() : int
 #viewBoxCollider(enabled : bool) : void
 </panel_attributes>
@@ -205,8 +212,8 @@ SpriteSheet
 +filename : string
 +id : string
 +rows : int
-+spriteHeight : int 
-+spriteWidth : int 
++spriteHeight : int
++spriteWidth : int
 </panel_attributes>
     <additional_attributes/>
   </element>
@@ -221,7 +228,7 @@ SpriteSheet
     <panel_attributes>&lt;&lt;struct&gt;&gt;
 Animation
 --
-+frame : int 
++frame : int
 +id : string id
 +loop : bool
 +sequence : vector&lt;int&gt;
@@ -252,11 +259,11 @@ Sprite
 +position : stbox::Point
 +rgba : stbox::Color::RGBA
 +solid : bool
-+angle : double 
-+height : float 
-+opacity : float 
-+scale : float 
-+width : float 
++angle : double
++height : float
++opacity : float
++scale : float
++width : float
 +layer : int
 +animation : Engine2::Animation
 +animations : map&lt;string, Engine2::Animation&gt;
@@ -264,7 +271,12 @@ Sprite
 --
 +boxCollider() : stbox::Rectangle
 +getAnimation() : Engine2::Animation
++move(distance : stbox::Point) : void
 +move(distance : stbox::Point, size : stbox::Math::Size&lt;int&gt;, origin : stbox::Point) : void
++moveHorizontal(distance : double) : void
++moveTo(newPosition : stbox::Point, limit : double, isGreater : bool, vertically : bool) : void
++moveVertical(distance : double) : void
++rotate(rotationAngle : double) : void
 +setAngle(newAngle : double) : void
 +setAnimation(animationId : string) : bool
 +setColor(color : stbox::Color::RGBA) : void
@@ -304,7 +316,7 @@ Example()
     <panel_attributes>Game
 --
 -m_bkgId : string[]
--m_bkgSpeed : int 
+-m_bkgSpeed : int
 -m_bulletCounter : int
 -m_bulletId : string
 -m_bulletIds : std::set&lt; string&gt;

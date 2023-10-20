@@ -346,6 +346,11 @@ auto Engine::inputState() -> State::Input
     return m_inputState;
 }
 
+void Engine::inputClean()
+{
+    m_inputState = State::Input::none;
+}
+
 auto Engine::inputStateEqual(State::Input state) -> bool
 {
     return m_inputState == state;
@@ -607,12 +612,9 @@ auto Engine::textureSize(const std::string &id) -> std::array<int, 2>
     return {width, height};
 }
 
-auto Engine::playAudio(const std::string &id, bool isMusic) -> bool
+auto Engine::playSound(const std::string &id) -> bool
 {
-    if (isMusic && musicExists(id)) {
-        return true;
-    }
-    else if (soundExists(id)) {
+    if (soundExists(id)) {
         Mix_PlayChannel(-1, m_sounds[id], 0);
         return true;
     }
@@ -620,6 +622,38 @@ auto Engine::playAudio(const std::string &id, bool isMusic) -> bool
     return false;
 }
 
+auto Engine::playMusic(const std::string &id) -> bool
+{
+    if (musicExists(id)) {
+        if (Mix_PlayingMusic() == 0) {
+            Mix_PlayMusic(m_songs[id], -1);
+            return true;
+        }
+        inform("Stop the music before playing another one!");
+        return false;
+    }
+
+    return false;
+}
+
+void Engine::pauseMusic()
+{
+    if (Mix_PlayingMusic() == 1) {
+        Mix_PauseMusic();
+    };
+}
+
+void Engine::resumeMusic()
+{
+    if (Mix_PausedMusic() == 1) {
+        Mix_ResumeMusic();
+    };
+}
+
+void Engine::stopMusic()
+{
+    Mix_HaltMusic();
+}
 
 auto Engine::musicExists(const std::string &id) -> bool
 {

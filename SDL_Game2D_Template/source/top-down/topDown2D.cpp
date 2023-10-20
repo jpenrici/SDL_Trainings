@@ -17,11 +17,11 @@ Game::Game() : Engine2(854, 480, "Game Test")
     m_bkgSpeed = 10;
 
     newSprite(m_bkgId[1], m_bkgId[0]);
-    setSpriteBox(m_bkgId[1], {{0, 0}, size.width, size.height});
+    setSpriteBoxCollider(m_bkgId[1], {{0, 0}, size.width, size.height});
     setSpriteLayer(m_bkgId[1], -2);
 
     newSprite(m_bkgId[2], m_bkgId[0]);
-    setSpriteBox(m_bkgId[2], {{0, -size.height}, size.width, size.height});
+    setSpriteBoxCollider(m_bkgId[2], {{0, -size.height}, size.width, size.height});
     setSpriteLayer(m_bkgId[2], -2);
 
     // Game Over
@@ -55,9 +55,10 @@ Game::Game() : Engine2(854, 480, "Game Test")
     }
 
     // Load Audio
+    loadMusic("music", "resources/music.mp3");
     loadSound("alert", "resources/alert.mp3");
-    loadSound("shot", "resources/alert.mp3");
-    loadSound("explosion", "resources/alert.mp3");
+    loadSound("explosion", "resources/explosion.mp3");
+    loadSound("shot", "resources/shot.mp3");
 
     // Load and configure resources.
     auto font = "NotoSansBlack";
@@ -82,6 +83,8 @@ Game::Game() : Engine2(854, 480, "Game Test")
     setTextActivity("Pause", State::Activity::disabled);
 
     setGameState(State::Game::playing);
+
+    playMusic("music");
 }
 
 void Game::newObstacle()
@@ -93,7 +96,7 @@ void Game::newObstacle()
         }, 48, 48
     });
     if (m_obstacleCounter % 5 != 0) {
-        setSpriteBox(obstacleId, 10, 10);
+        setSpriteBoxCollider(obstacleId, 10, 10);
         setSpriteByIndex(obstacleId, 1);
         setSpriteLayer(obstacleId, -1);
         setSpriteScale(obstacleId, stbox::Math::randomize(2, 4) * 0.1);
@@ -145,20 +148,24 @@ void Game::update()
     setTextPosition("Player", player.position + Position(player.width + 5, player.height + 5));
 
     // Events.
-    if (gameStateEqual(State::Game::playing) && inputStateEqual(State::Input::keyboard_escape)) {
-        setTextActivity("Pause", State::Activity::activated);
-        setGameState(State::Game::paused);
-        setAnimationSpeed(m_playerId, 0);
-        inform("Game paused!");
-        return;
-    }
-    if (gameStateEqual(State::Game::paused)) {
-        if (inputStateEqual(State::Input::keyboard_escape)) {
-            setTextActivity("Pause", State::Activity::disabled);
-            setGameState(State::Game::playing);
-            setAnimationSpeed(m_playerId, 10);
-            inform("Game playing!");
+    if (inputStateEqual(State::Input::keyboard_escape)) {
+        if (gameStateEqual(State::Game::playing)) {
+            setGameState(State::Game::paused);
+            setTextActivity("Pause", State::Activity::activated);
+            stopAnimation(m_playerId);
+            inform("Game paused!");
+            pauseMusic();
         }
+        else if (gameStateEqual(State::Game::paused)) {
+            setGameState(State::Game::playing);
+            setTextActivity("Pause", State::Activity::disabled);
+            restartAnimation(m_playerId);
+            inform("Game playing!");
+            resumeMusic();
+        }
+    }
+
+    if (gameStateEqual(State::Game::paused)) {
         return;
     }
 
@@ -222,22 +229,22 @@ void Game::update()
         m_bulletIds.emplace(bulletId);
         m_bulletLock = true;
         m_bulletCounter++;
-        playAudio("shot");
+        playSound("shot");
     }
 
     // Update Obstacle.
     for (const auto &obstacleId : m_obstaclesIds) {
         auto obstacle = std::get<0>(sprite(obstacleId));
         auto repositionObstacle = false;
-        obstacle.position.Y.value += m_obstacleSpeed * performanceReport().deltaTime;
-        obstacle.angle = obstacle.angle > 360 ? 0 : obstacle.angle + 2;
+        obstacle.moveVertical(m_obstacleSpeed * performanceReport().deltaTime);
+        obstacle.rotate(2);
         // Collision : Player x Obstacle
         if (checkCollision(m_playerId, obstacle.id)) {
             repositionObstacle = true;
             m_collisions++;
             m_playerEnergy -= 5;
             m_score -= 5;
-            playAudio("alert");
+            playSound("alert");
             if (m_playerEnergy < 0) {
                 setGameState(State::Game::gameOver);
                 viewBoxCollider(false);
@@ -249,34 +256,33 @@ void Game::update()
         // Update Bullet.
         for (const auto &bulletId : m_bulletIds) {
             auto result = sprite(bulletId);
-            auto animBullet = std::get<0>(result);
+            auto bullet = std::get<0>(result);
             if (std::get<bool>(result)) {
-                if (animBullet.activity == State::Activity::activated) {
+                if (bullet.activity == State::Activity::activated) {
                     // Collision: Bullet x Obstacle
-                    if (checkCollision(animBullet.id, obstacle.id) && animBullet.animation.frame == 0) {
+                    if (checkCollision(bullet.id, obstacle.id) && bullet.animation.frame == 0) {
                         repositionObstacle = true;
                         setSpriteLayer(bulletId, 2);
-                        setSpriteByIndex(animBullet.id, 1);
+                        setSpriteByIndex(bullet.id, 1);
                         m_bulletLock = false;
                         m_score += 10;
                         m_hits++;
-                        playAudio("explosion");
+                        playSound("explosion");
                     }
-                    animBullet.position.Y.value -= m_bulletSpeed * performanceReport().deltaTime;
-                    if (animBullet.animation.frame == 1) {
-                        setSpriteScale(bulletId, animBullet.scale + 0.005);
+                    bullet.moveVertical(-m_bulletSpeed * performanceReport().deltaTime);
+                    if (bullet.animation.frame == 1) {
+                        setSpriteScale(bulletId, bullet.scale + 0.005);
                     }
                 }
-                setSpriteBox(animBullet.id, animBullet.boxCollider());
-                if (animBullet.position.Y.value < 0) {
-                    eraseSprite(animBullet.id);
+                setSpriteBoxCollider(bullet.id, bullet.boxCollider());
+                if (bullet.position.Y.value < 0) {
+                    eraseSprite(bullet.id);
                     m_bulletLock = false;
                 }
             }
         }
         if (repositionObstacle) {
-            obstacle.position.X.value = stbox::Math::randomize(0, windowWidth());
-            obstacle.position.Y.value = -stbox::Math::randomize(100, 200);
+            obstacle.position = {stbox::Math::randomize<double>(0, windowWidth()), -stbox::Math::randomize<double>(100, 200)};
             obstacle.angle = stbox::Math::randomize(1, 360);
         }
         setSpriteAngle(obstacle.id, obstacle.angle);
@@ -286,10 +292,8 @@ void Game::update()
     // Update Background
     for (int i = 1; i < 3; ++i) {
         auto background = std::get<0>(sprite(m_bkgId[i]));
-        background.position.Y.value += m_bkgSpeed * performanceReport().deltaTime;
-        if (background.position.Y.value > windowHeight()) {
-            background.position.Y.value = -background.height;
-        }
+        background.moveVertical(m_bkgSpeed * performanceReport().deltaTime);
+        background.moveTo({0, -background.height}, windowHeight(), true, true);
         setSpritePosition(background.id, background.position);
     }
 }
