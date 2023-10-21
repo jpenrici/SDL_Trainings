@@ -47,7 +47,7 @@ auto Engine2::loadSpriteSheet(std::string id, const std::string &filename) -> bo
     return loadSpriteSheet(id, 1, 1, filename);
 }
 
-auto Engine2::loadSprite(std::string id, const std::string &filename, bool quiet) -> bool
+auto Engine2::loadSprite(std::string id, const std::string &filename) -> bool
 {
     if (loadSpriteSheet(id, 1, 1, filename)) {
         auto result = spriteSheet(id);
@@ -55,31 +55,32 @@ auto Engine2::loadSprite(std::string id, const std::string &filename, bool quiet
             auto spriteSheet = std::get<SpriteSheet>(result);
             auto height = static_cast<float>(spriteSheet.spriteHeight);
             auto width = static_cast<float>(spriteSheet.spriteWidth);
-            return newSprite(id, spriteSheet.id, 0, 0, width, height, quiet);
+            return newSprite(id, spriteSheet.id, 0, 0, width, height);
         }
     }
 
     return false;
 }
 
-auto Engine2::newAnimation(std::string id, std::string spriteId, std::vector<int> spriteNumbers, int timeInterval, bool quiet) -> bool
+auto Engine2::newAnimation(std::string id, std::string spriteId, std::vector<int> spriteNumbers,
+                           int timeInterval) -> bool
 {
     if (!m_sprites.contains(spriteId)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + spriteId + ", not found! Cannot sequence animation with sprites!");
         }
         return false;
     }
 
     if (m_sprites[spriteId].animations.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Animation ID: " + id + ", already exists!");
         }
         return false;
     }
 
     if (spriteNumbers.empty()) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Animation ID: " + id + ", list of sprite numbers empty!");
         }
         return false;
@@ -92,7 +93,7 @@ auto Engine2::newAnimation(std::string id, std::string spriteId, std::vector<int
     animation.sequence = spriteNumbers;
 
     m_sprites[spriteId].animations[id] = animation;
-    if (!quiet) {
+    if (!m_quiet) {
         inform("Added: Animation [" + id + "], Sprite [" + spriteId + "] : " + std::to_string(spriteNumbers.size()) +
                " selected sprites.");
     }
@@ -100,7 +101,15 @@ auto Engine2::newAnimation(std::string id, std::string spriteId, std::vector<int
     return true;
 }
 
-auto Engine2::newSprite(std::string id, std::string spriteSheetID, float x, float y, float width, float height, bool quiet) -> bool
+auto Engine2::newSprite(Sprite sprite) -> bool
+{
+    return newSprite(sprite.id, sprite.spriteSheetId,
+                     sprite.position.X.toFloat(), sprite.position.Y.toFloat(),
+                     sprite.width, sprite.height);
+}
+
+auto Engine2::newSprite(std::string id, std::string spriteSheetID, float x, float y, float width,
+                        float height) -> bool
 {
     if (m_sprites.contains(id)) {
         inform("Sprite ID: " + id + ", already exists!");
@@ -132,7 +141,7 @@ auto Engine2::newSprite(std::string id, std::string spriteSheetID, float x, floa
     sprite.animations[animation.id] = animation;
     sprite.activity = State::Activity::activated;
     m_sprites[id] = sprite;
-    if (!quiet) {
+    if (!m_quiet) {
         inform("Added: Sprite [" + sprite.id + ", Sprite Sheet [" + spriteSheetID + "], Animation [" +
                sprite.animation.id + ", " + std::to_string(animation.sequence.size()) + " sprites]");
     }
@@ -140,28 +149,29 @@ auto Engine2::newSprite(std::string id, std::string spriteSheetID, float x, floa
     return true;
 }
 
-auto Engine2::newSprite(std::string id, std::string spriteSheetId, float x, float y, bool quiet) -> bool
+auto Engine2::newSprite(std::string id, std::string spriteSheetId, float x, float y) -> bool
 {
     auto result1 = spriteSheet(spriteSheetId);
     if (std::get<bool>(result1)) {
         auto spriteSheet = std::get<SpriteSheet>(result1);
         auto height = static_cast<float>(spriteSheet.spriteHeight);
         auto width = static_cast<float>(spriteSheet.spriteWidth);
-        auto result2 = newSprite(id, spriteSheetId, x, y, width, height, quiet);
+        auto result2 = newSprite(id, spriteSheetId, x, y, width, height);
         return result2;
     }
 
     return false;
 }
 
-auto Engine2::newSprite(std::string id, std::string spriteSheetId, BoxCollider box, bool quiet) -> bool
+auto Engine2::newSprite(std::string id, std::string spriteSheetId, BoxCollider box) -> bool
 {
-    return newSprite(id, spriteSheetId, box.origin.X.toFloat(), box.origin.Y.toFloat(), box.width<float>(), box.height<float>(), quiet);
+    return newSprite(id, spriteSheetId, box.origin.X.toFloat(), box.origin.Y.toFloat(),
+                     box.width<float>(), box.height<float>());
 }
 
-auto Engine2::newSprite(std::string id, std::string spriteSheetId, bool quiet) -> bool
+auto Engine2::newSprite(std::string id, std::string spriteSheetId) -> bool
 {
-    return newSprite(id, spriteSheetId, 0, 0, quiet);
+    return newSprite(id, spriteSheetId, 0, 0);
 }
 
 auto Engine2::newText(const std::string &id, const std::string &fontId, const std::string &text, Position position,
@@ -197,35 +207,36 @@ auto Engine2::newText(const std::string &id, const std::string &fontId, const st
     return true;
 }
 
-auto Engine2::setAnimation(std::string id, std::string spriteId, bool quiet) -> bool
+auto Engine2::setAnimation(std::string id, std::string spriteId) -> bool
 {
     if (!m_sprites.contains(spriteId)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + spriteId + ", not found! Failed to configure animation!");
         }
         return false;
     }
 
     if (!m_sprites[spriteId].animations.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Animation ID: " + id + ", not found! Failed to configure animation!");
         }
         return false;
     }
 
     m_sprites[spriteId].animation = m_sprites[spriteId].animations[id];
-    if (!quiet) {
+    if (!m_quiet) {
         inform("Sprite [" + spriteId + "]: Animation [" + id + "], defined!");
     }
 
     return true;
 }
 
-auto Engine2::setAnimationSpeed(std::string id, int speed, bool quiet) -> bool
+auto Engine2::setAnimationSpeed(std::string id, int speed) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
-            inform("Animation ID: " + id + ", not found! It was not possible to change the time between one sprite and another!");
+        if (!m_quiet) {
+            inform("Animation ID: " + id +
+                   ", not found! It was not possible to change the time between one sprite and another!");
         }
         return false;
     }
@@ -235,10 +246,10 @@ auto Engine2::setAnimationSpeed(std::string id, int speed, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setSpriteActivity(std::string id, State::Activity activity, bool quiet) -> bool
+auto Engine2::setSpriteActivity(std::string id, State::Activity activity) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Could not change the state (activity) of the Sprite!");
         }
         return false;
@@ -249,10 +260,10 @@ auto Engine2::setSpriteActivity(std::string id, State::Activity activity, bool q
     return true;
 }
 
-auto Engine2::setSpriteAngle(std::string id, double angle, bool quiet) -> bool
+auto Engine2::setSpriteAngle(std::string id, double angle) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change angle!");
         }
         return false;
@@ -263,10 +274,10 @@ auto Engine2::setSpriteAngle(std::string id, double angle, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setSpriteBoxCollider(std::string id, BoxCollider box, bool quiet) -> bool
+auto Engine2::setSpriteBoxCollider(std::string id, BoxCollider box) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite box!");
         }
         return false;
@@ -279,10 +290,10 @@ auto Engine2::setSpriteBoxCollider(std::string id, BoxCollider box, bool quiet) 
     return false;
 }
 
-auto Engine2::setSpriteBoxCollider(std::string id, float width, float height, bool quiet) -> bool
+auto Engine2::setSpriteBoxCollider(std::string id, float width, float height) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite box!");
         }
         return false;
@@ -294,20 +305,20 @@ auto Engine2::setSpriteBoxCollider(std::string id, float width, float height, bo
     return false;
 }
 
-auto Engine2::setSpriteEmptyBoxCollider(std::string id, Position position, bool quiet) -> bool
+auto Engine2::setSpriteEmptyBoxCollider(std::string id, Position position) -> bool
 {
-    return setSpriteBoxCollider(id, {position, 0, 0}, quiet);
+    return setSpriteBoxCollider(id, {position, 0, 0});
 }
 
-auto Engine2::setSpriteEmptyBoxCollider(std::string id, bool quiet) -> bool
+auto Engine2::setSpriteEmptyBoxCollider(std::string id) -> bool
 {
-    return setSpriteBoxCollider(id, 0, 0, quiet);
+    return setSpriteBoxCollider(id, 0, 0);
 }
 
-auto Engine2::setSpriteByIndex(std::string id, int index, bool quiet) -> bool
+auto Engine2::setSpriteByIndex(std::string id, int index) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite!");
         }
         return false;
@@ -315,24 +326,26 @@ auto Engine2::setSpriteByIndex(std::string id, int index, bool quiet) -> bool
 
     auto limit = m_sprites[id].animation.sequence.size() - 1;
     if (index < 0 || index > limit) {
-        if (!quiet) {
-            inform("Sprite ID: " + id + ", index outside range [0 - " + std::to_string(limit) + "]! Unable to change sprite!");
+        if (!m_quiet) {
+            inform("Sprite ID: " + id + ", index outside range [0 - " + std::to_string(limit) +
+                   "]! Unable to change sprite!");
         }
         return false;
     }
 
     m_sprites[id].animation.frame = index;
-    if (!quiet) {
-        inform("Sprite [" + id + "]: Animation [" + m_sprites[id].animation.id + "] sprite [" + std::to_string(index) + ")]!");
+    if (!m_quiet) {
+        inform("Sprite [" + id + "]: Animation [" + m_sprites[id].animation.id + "] sprite [" +
+               std::to_string(index) + ")]!");
     }
 
     return true;
 }
 
-auto Engine2::setSpriteLayer(std::string id, int layer, bool quiet) -> bool
+auto Engine2::setSpriteLayer(std::string id, int layer) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change layer!");
         }
         return false;
@@ -344,10 +357,10 @@ auto Engine2::setSpriteLayer(std::string id, int layer, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setSpriteScale(std::string id, float scale, bool quiet) -> bool
+auto Engine2::setSpriteScale(std::string id, float scale) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite scale!");
         }
         return false;
@@ -358,10 +371,10 @@ auto Engine2::setSpriteScale(std::string id, float scale, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setSpriteSolid(std::string id, bool isSolid, bool quiet) -> bool
+auto Engine2::setSpriteSolid(std::string id, bool isSolid) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite to solid!");
         }
         return false;
@@ -372,24 +385,24 @@ auto Engine2::setSpriteSolid(std::string id, bool isSolid, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setSpriteOpacity(std::string id, Uint8 opacityPercentage, bool quiet) -> bool
+auto Engine2::setSpriteOpacity(std::string id, Uint8 opacityPercentage) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite opacity!");
         }
         return false;
     }
 
-    m_sprites[id].opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;
+    m_sprites[id].opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255.0 / 100.0;
 
     return true;
 }
 
-auto Engine2::setSpritePosition(std::string id, Position position, bool quiet) -> bool
+auto Engine2::setSpritePosition(std::string id, Position position) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to change sprite position!");
         }
         return false;
@@ -400,10 +413,10 @@ auto Engine2::setSpritePosition(std::string id, Position position, bool quiet) -
     return true;
 }
 
-auto Engine2::setText(std::string id, std::string text, bool quiet) -> bool
+auto Engine2::setText(std::string id, std::string text) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change text!");
         }
         return false;
@@ -414,10 +427,10 @@ auto Engine2::setText(std::string id, std::string text, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setTextActivity(std::string id, State::Activity activity, bool quiet) -> bool
+auto Engine2::setTextActivity(std::string id, State::Activity activity) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Could not change the state (activity) of the text!");
         }
         return false;
@@ -428,10 +441,10 @@ auto Engine2::setTextActivity(std::string id, State::Activity activity, bool qui
     return true;
 }
 
-auto Engine2::setTextAngle(std::string id, int angle, bool quiet) -> bool
+auto Engine2::setTextAngle(std::string id, int angle) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change angle!");
         }
         return false;
@@ -442,10 +455,10 @@ auto Engine2::setTextAngle(std::string id, int angle, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setTextColor(std::string id, RGBA foreground, bool quiet) -> bool
+auto Engine2::setTextColor(std::string id, RGBA foreground) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change text color!");
         }
         return false;
@@ -456,17 +469,17 @@ auto Engine2::setTextColor(std::string id, RGBA foreground, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setTextFont(std::string id, std::string fontId, bool quiet) -> bool
+auto Engine2::setTextFont(std::string id, std::string fontId) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change text!");
         }
         return false;
     }
 
     if (!textFontExists(fontId)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + " font ID " + fontId + ", not found!");
         }
         return false;
@@ -477,10 +490,10 @@ auto Engine2::setTextFont(std::string id, std::string fontId, bool quiet) -> boo
     return true;
 }
 
-auto Engine2::setTextLayer(std::string id, int layer, bool quiet) -> bool
+auto Engine2::setTextLayer(std::string id, int layer) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change layer!");
         }
         return false;
@@ -492,10 +505,10 @@ auto Engine2::setTextLayer(std::string id, int layer, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setTextScale(std::string id, float scale, bool quiet) -> bool
+auto Engine2::setTextScale(std::string id, float scale) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change text scale!");
         }
         return false;
@@ -506,10 +519,10 @@ auto Engine2::setTextScale(std::string id, float scale, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::setTextOpacity(std::string id, Uint8 opacityPercentage, bool quiet) -> bool
+auto Engine2::setTextOpacity(std::string id, Uint8 opacityPercentage) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change text opacity!");
         }
         return false;
@@ -520,10 +533,10 @@ auto Engine2::setTextOpacity(std::string id, Uint8 opacityPercentage, bool quiet
     return true;
 }
 
-auto Engine2::setTextPosition(std::string id, Position position, bool quiet) -> bool
+auto Engine2::setTextPosition(std::string id, Position position) -> bool
 {
     if (!m_texts.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + id + ", not found! Unable to change text position!");
         }
         return false;
@@ -534,17 +547,17 @@ auto Engine2::setTextPosition(std::string id, Position position, bool quiet) -> 
     return true;
 }
 
-auto Engine2::setTextSize(std::string textId, int size, bool quiet) -> bool
+auto Engine2::setTextSize(std::string textId, int size) -> bool
 {
     if (!m_texts.contains(textId)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + textId + ", not found! Unable to change text font size!");
         }
         return false;
     }
 
     if (size < 0 || size > windowHeight()) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Text ID: " + textId + ", size out of limit!");
         }
         return false;
@@ -555,10 +568,15 @@ auto Engine2::setTextSize(std::string textId, int size, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::sprite(std::string id, bool quiet) -> std::tuple<Engine2::Sprite, bool>
+auto Engine2::sprite() -> Sprite
+{
+    return {};
+}
+
+auto Engine2::sprite(std::string id) -> std::tuple<Sprite, bool>
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found!");
         }
         return {Sprite(), false};
@@ -572,39 +590,39 @@ auto Engine2::sprites() -> std::map<std::string, Sprite>
     return m_sprites;
 }
 
-auto Engine2::totalSprites() -> int
+auto Engine2::totalSprites() -> size_t
 {
     return m_sprites.size();
 }
 
-auto Engine2::eraseSprite(std::string id, bool quiet) -> bool
+auto Engine2::eraseSprite(std::string id) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to delete!");
         }
         return false;
     }
 
     m_sprites.erase(id);
-    if (!quiet) {
+    if (!m_quiet) {
         inform("Sprite ID: " + id + " erased! Sprites [" + std::to_string(m_sprites.size()) + "].");
     }
 
     return true;
 }
 
-auto Engine2::swapSprite(std::string id, Sprite sprite, bool quiet) -> bool
+auto Engine2::swapSprite(std::string id, Sprite sprite) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to swap!");
         }
         return false;
     }
 
     m_sprites[id] = sprite;
-    if (!quiet) {
+    if (!m_quiet) {
         inform("Sprite ID: " + id + " changed!");
     }
 
@@ -731,12 +749,12 @@ void Engine2::Sprite::setAngle(double newAngle)
 void Engine2::Sprite::setColor(RGBA color)
 {
     rgba = color;
-    opacity = 100 / color.A;
+    opacity = static_cast<float>(color.A % 256);
 }
 
 void Engine2::Sprite::setOpacity(Uint8 opacityPercentage)
 {
-    opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;;
+    opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;
 }
 
 void Engine2::Sprite::setScale(float newScale)
@@ -801,10 +819,10 @@ auto Engine2::Animation::str() -> std::string
            std::to_string(speed) + "] Loop [ " + (loop ? "true" : "false") + "] ]";
 }
 
-auto Engine2::stopAnimation(std::string id, bool quiet) -> bool
+auto Engine2::stopAnimation(std::string id) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to stop animation!");
         }
         return false;
@@ -815,10 +833,10 @@ auto Engine2::stopAnimation(std::string id, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::restartAnimation(std::string id, bool quiet) -> bool
+auto Engine2::restartAnimation(std::string id) -> bool
 {
     if (!m_sprites.contains(id)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + id + ", not found! Unable to restart animation!");
         }
         return false;
@@ -829,17 +847,17 @@ auto Engine2::restartAnimation(std::string id, bool quiet) -> bool
     return true;
 }
 
-auto Engine2::checkCollision(std::string spriteId1, std::string spriteId2, bool quiet) -> bool
+auto Engine2::checkCollision(std::string spriteId1, std::string spriteId2) -> bool
 {
     if (!m_sprites.contains(spriteId1)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + spriteId1 + ", not found! Cannot check collision!");
         }
         return false;
     }
 
     if (!m_sprites.contains(spriteId2)) {
-        if (!quiet) {
+        if (!m_quiet) {
             inform("Sprite ID: " + spriteId2 + ", not found! Cannot check collision!");
         }
         return false;
@@ -884,14 +902,15 @@ auto Engine2::spriteSheet(std::string id) -> std::tuple<SpriteSheet, bool>
     return {m_spriteSheets[id], true};
 }
 
-auto Engine2::spriteSheetSize(std::string id, bool quiet) -> stbox::Math::Size<float>
+auto Engine2::spriteSheetSize(std::string id) -> stbox::Math::Size<float>
 {
     if (!m_spriteSheets.contains(id)) {
         inform("Image ID: " + id + ", not found! Return negative size! ");
         return {-1, -1};
     }
 
-    return {static_cast<float>(m_spriteSheets[id].spriteWidth), static_cast<float>(m_spriteSheets[id].spriteHeight)};
+    return {static_cast<float>(m_spriteSheets[id].spriteWidth),
+            static_cast<float>(m_spriteSheets[id].spriteHeight)};
 }
 
 void Engine2::Text::move(Position distance)
@@ -911,7 +930,7 @@ void Engine2::Text::setColor(RGBA color)
 
 void Engine2::Text::setOpacity(Uint8 opacityPercentage)
 {
-    opacity = opacityPercentage < 0 ? 0 : (opacityPercentage % 101) * 255 / 100;;
+    opacity = opacityPercentage < 0 ? 0 : static_cast<float>((opacityPercentage % 101) * 255) / 100;;
 }
 
 void Engine2::Text::setScale(float newScale)
@@ -967,7 +986,7 @@ auto Engine2::renderSprite(Sprite sprite) -> bool
 
     SDL_Rect clip = {x, y, spriteSheet.spriteWidth, spriteSheet.spriteHeight};
     SDL_FRect box = {sprite.position.X.toFloat(), sprite.position.Y.toFloat(), sprite.width, sprite.height};
-    return renderTexture(sprite.spriteSheetId, clip, box, sprite.angle, sprite.scale, sprite.opacity);
+    return renderTexture(sprite.spriteSheetId, clip, box, sprite.angle, sprite.scale, sprite.opacity, SDL_FLIP_NONE);
 }
 
 auto Engine2::renderText(std::string textId) -> bool
@@ -981,7 +1000,7 @@ auto Engine2::renderText(std::string textId) -> bool
         auto text = m_texts[textId];
         SDL_Color color = {text.foreground.R, text.foreground.G, text.foreground.B, text.foreground.A};
         renderTextFont(text.fontId, text.text, {text.position.X.toFloat(), text.position.Y.toFloat()},
-                       color, text.fontSize, 0, 1, text.opacity);
+                       color, text.fontSize, 0, 1, text.opacity, SDL_FLIP_NONE);
     }
 
     return true;
@@ -999,7 +1018,9 @@ void Engine2::render()
         for (auto item : m_sprites) {
             auto sprite = item.second;
             if (sprite.layer == layer) {
-                SDL_FRect box = {sprite.position.X.toFloat(), sprite.position.Y.toFloat(), sprite.width, sprite.height};
+                SDL_FRect box = {sprite.position.X.toFloat(), sprite.position.Y.toFloat(),
+                                 sprite.width, sprite.height
+                                };
                 if (sprite.activity == State::Activity::activated) {
                     if (!renderSprite(sprite)) {
                         SDL_SetRenderDrawColor(currentRenderer(), 255, 0, 0, 255);
@@ -1019,9 +1040,14 @@ void Engine2::render()
             auto text = item.second;
             if (text.activity == State::Activity::activated) {
                 if (text.layer == layer) {
-                    SDL_Color color = {text.foreground.R, text.foreground.G, text.foreground.B, text.foreground.A};
-                    Engine::renderTextFont(text.fontId, text.text, {text.position.X.toFloat(), text.position.Y.toFloat()}, color,
-                                           text.fontSize, text.angle, text.scale, text.opacity);
+                    SDL_Color color = {text.foreground.R,
+                                       text.foreground.G,
+                                       text.foreground.B,
+                                       text.foreground.A
+                                      };
+                    Engine::renderTextFont(text.fontId, text.text,
+                    {text.position.X.toFloat(), text.position.Y.toFloat()}, color,
+                    text.fontSize, text.angle, text.scale, text.opacity, SDL_FLIP_NONE);
                 }
             }
         }

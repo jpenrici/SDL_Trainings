@@ -9,7 +9,7 @@ Game::Game() : Engine2(854, 480, "Game Test")
     auto white = RGBA{255, 255, 255};
 
     // Game
-    viewBoxCollider();
+    viewBoxCollider(true);
 
     // Background
     loadSpriteSheet(m_bkgId[0], "resources/background.png");
@@ -27,11 +27,11 @@ Game::Game() : Engine2(854, 480, "Game Test")
     setSpriteOpacity(m_bkgId[2], 60);
 
     // Game Over
-    loadSpriteSheet(m_gameOver, "resources/gameOver.png");
-    newSprite(m_gameOver, m_gameOver);
-    setSpritePosition(m_gameOver, {60, 50});
-    setSpriteLayer(m_gameOver, TOP);
-    setSpriteActivity(m_gameOver, State::Activity::disabled);
+    loadSpriteSheet(m_gameOverId, "resources/gameOver.png");
+    newSprite(m_gameOverId, m_gameOverId);
+    setSpritePosition(m_gameOverId, {60, 50});
+    setSpriteLayer(m_gameOverId, TOP);
+    setSpriteActivity(m_gameOverId, State::Activity::disabled);
 
     // Player
     loadSpriteSheet(m_playerId, 1, 6, "resources/spaceship.png");
@@ -63,7 +63,7 @@ Game::Game() : Engine2(854, 480, "Game Test")
     loadSound("shot", "resources/shot.mp3");
 
     // Load and configure resources.
-    auto font = "NotoSansBlack";
+    std::string font = "NotoSansBlack";
     loadFont(font, "resources/NotoSans-Black.ttf");
 
     // Texts - Layer 0
@@ -100,10 +100,19 @@ void Game::newObstacle()
         setSpriteOpacity(obstacleId, 80);
         setSpriteByIndex(obstacleId, 1);
         setSpriteLayer(obstacleId, OBSTACLES);
-        setSpriteScale(obstacleId, stbox::Math::randomize(2, 4) * 0.1);
+        setSpriteScale(obstacleId, stbox::Math::randomize<float>(2, 4) * 0.1);
         setSpritePosition(obstacleId, {stbox::Math::randomize<float>(windowWidth()), -stbox::Math::randomize<float>(2 * windowHeight())});
     }
     m_obstaclesIds.emplace(obstacleId);
+}
+
+void Game::render()
+{
+    Engine2::render();
+
+    auto player = std::get<0>(sprite(m_playerId));
+    float width = m_playerEnergy < 0 ? 0 : player.width * m_playerEnergy / 100;
+    renderBar({{player.position.X.value, player.position.Y.value + player.height + 5}, width, 5}, {255, 120, 0, 128});
 }
 
 void Game::renderBar(stbox::Rectangle rectangle, RGBA color)
@@ -113,26 +122,17 @@ void Game::renderBar(stbox::Rectangle rectangle, RGBA color)
     SDL_RenderFillRectF(currentRenderer(), &rect);
 }
 
-void Game::render()
-{
-    Engine2::render();
-
-    auto player = std::get<0>(sprite(m_playerId));
-    float width = m_playerEnergy < 0 ? 0 : player.width * m_playerEnergy / 100;
-    renderBar({{player.position.X.value + 5, player.position.Y.value + player.height + 5}, width, 5}, {255, 120, 0, 128});
-}
-
 void Game::update()
 {
     if (gameStateEqual(State::Game::gameOver)) {
-        setSpriteActivity(m_gameOver, State::Activity::activated);
+        setSpriteActivity(m_gameOverId, State::Activity::activated);
         stopAnimation(m_playerId);
         stopMusic();
         if (inputStateEqual(State::Input::keyboard_space)) {
             // Restart
             playMusic("music");
             setGameState(State::Game::playing);
-            setSpriteActivity(m_gameOver, State::Activity::disabled);
+            setSpriteActivity(m_gameOverId, State::Activity::disabled);
             restartAnimation(m_playerId);
             m_playerEnergy = 100;
             m_collisions = 0;
@@ -154,7 +154,7 @@ void Game::update()
     setText("Hits", "Hits : " + std::to_string(m_hits));
     setText("Shots", "Shots : " + std::to_string(m_bulletCounter));
     setText("Collisions", "Collisions: " + std::to_string(m_collisions));
-    setText("Energy", "Energy: " + std::to_string(m_playerEnergy));
+    setText("Energy", "Energy: " + std::to_string(static_cast<int>(m_playerEnergy)));
     setTextPosition("Player", player.position + Position(player.width + 5, player.height + 5));
 
     // Events.
@@ -183,11 +183,13 @@ void Game::update()
         return;
     }
 
+    // Only horizontal and vertical movement.
     player.move4directions(m_playerSpeed * performanceReport().deltaTime, {{0, 0},
         windowWidth<double>(), windowHeight<double>()
     }, inputState());
     setSpritePosition(player.id, player.position);
 
+    // Shot separated from movement.
     if (inputStateEqual(State::Input::keyboard_space) && !m_bulletLock) {
         std::string bulletId = m_bulletId + std::to_string(m_bulletCounter % 10);
         newSprite(bulletId, m_bulletId, {player.center(), 8, 16});
@@ -204,7 +206,8 @@ void Game::update()
     for (const auto &obstacleId : m_obstaclesIds) {
         auto obstacle = std::get<0>(sprite(obstacleId));
         auto repositionObstacle = false;
-        obstacle.moveVertical(m_obstacleSpeed * performanceReport().deltaTime);
+        //obstacle.moveVertical(m_obstacleSpeed * performanceReport().deltaTime);
+        obstacle.move(m_obstacleSpeed * performanceReport().deltaTime, 85);
         obstacle.rotate(2);
         // Collision : Player x Obstacle
         if (checkCollision(m_playerId, obstacle.id)) {
@@ -261,8 +264,8 @@ void Game::update()
     }
 
     // Update Background
-    for (int i = 1; i < m_bkgId.size(); ++i) {
-        auto background = std::get<0>(sprite(m_bkgId[i]));
+    for (size_t i = 1; i < m_bkgId.size(); ++i) {
+        auto background = std::get<0>(sprite(m_bkgId.at(i)));
         background.moveVertical(m_bkgSpeed * performanceReport().deltaTime);
         background.moveTo({0, -background.height}, windowHeight(), true, true);
         setSpritePosition(background.id, background.position);

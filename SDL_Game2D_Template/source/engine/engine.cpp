@@ -113,11 +113,11 @@ void Engine::gameLoop()
         auto fpsHR = static_cast<double>(end - start) / cps * 1000.0;
 
         auto fps = 1000 / 60; // 60 FPS
-        auto delay = fpsHR > fps ? 0 : fps - fpsHR;
+        Uint32 delay = fpsHR > fps ? 0 : fps - fpsHR;
         m_gamePerformance.framesPerSecond = 1000 / (fpsHR + delay);
         SDL_Delay(delay);
 
-        if (m_gamePerformance.ticks % (15 * 1000) == 0) {
+        if (m_gamePerformance.ticks % static_cast<long>(15 * 1000) == 0) {
             inform(stbox::Text::toStr("Ticks: ", m_gamePerformance.ticks, " FPS: ", m_gamePerformance.framesPerSecond,
                                       " Delay: ", delay, " Delta time: ", m_gamePerformance.deltaTime, " seconds"));
         }
@@ -129,7 +129,7 @@ void Engine::gameLoop()
 void Engine::inputControl()
 {
     // Listen to user input.
-    auto *keyState = SDL_GetKeyboardState(nullptr);
+    const auto *keyState = SDL_GetKeyboardState(nullptr);
     while (SDL_PollEvent(&m_event) != 0) {
         // Window events.
         if (m_event.type == SDL_QUIT) {
@@ -392,7 +392,7 @@ auto Engine::loadFont(const std::string &id, const std::string &filename) -> boo
     int fontSize = 12;
     auto *font = TTF_OpenFont(filename.c_str(), fontSize);
     if (font == nullptr) {
-        inform({"Font ID: " + id + ", failed to open TTF font!\n", TTF_GetError()});
+        inform({"Font ID: " + id + ", failed to open TTF font!\n", TTF_GetError()}, true);
         return false;
     }
 
@@ -416,7 +416,7 @@ auto Engine::loadMusic(const std::string &id, const std::string &filename) -> bo
 
     auto *audio = Mix_LoadMUS(filename.c_str());
     if (audio == nullptr) {
-        inform({"Music ID: " + id + ", failed to open file!\n", TTF_GetError()});
+        inform({"Music ID: " + id + ", failed to open file!\n", TTF_GetError()}, true);
         return false;
     }
 
@@ -440,7 +440,7 @@ auto Engine::loadSound(const std::string &id, const std::string &filename) -> bo
 
     auto *audio = Mix_LoadWAV(filename.c_str());
     if (audio == nullptr) {
-        inform({"Sound ID: " + id + ", failed to open file!\n", TTF_GetError()});
+        inform({"Sound ID: " + id + ", failed to open file!\n", TTF_GetError()}, true);
         return false;
     }
 
@@ -464,14 +464,14 @@ auto Engine::loadTexture(const std::string &id, int rows, int  columns, const st
 
     auto *surface = IMG_Load(filename.c_str());
     if (surface == nullptr) {
-        inform({"Texture ID: " + id + ", failed to open image [" + filename + "]!\n", IMG_GetError()});
+        inform({"Texture ID: " + id + ", failed to open image [" + filename + "]!\n", IMG_GetError()}, true);
         return false;
     }
 
     auto *texture = SDL_CreateTextureFromSurface(currentRenderer(), surface);
     SDL_FreeSurface(surface);
     if (texture == nullptr) {
-        inform({"Image ID: " + id + ", failed to create Texture [" + id + "]!\n", SDL_GetError()});
+        inform({"Image ID: " + id + ", failed to create Texture [" + id + "]!\n", SDL_GetError()}, true);
         return false;
     }
 
@@ -535,10 +535,10 @@ auto Engine::renderTexture(SDL_Texture *texture, SDL_Rect clip, SDL_FRect box, d
         return false;
     }
 
-    box.w = box.w < 1 ? width : box.w;
-    box.h = box.h < 1 ? height : box.h;
+    box.w = box.w < 1 ? static_cast<float>(width) : box.w;
+    box.h = box.h < 1 ? static_cast<float>(height) : box.h;
 
-    SDL_FRect dest{box.x, box.y, clip.w * scale, clip.h * scale};
+    SDL_FRect dest{box.x, box.y, static_cast<float>(clip.w) *scale, static_cast<float>(clip.h) *scale};
     if (box.w != dest.w) {
         dest.x = box.x + (box.w - dest.w) / 2;
     }
@@ -565,12 +565,12 @@ auto Engine::renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, 
 
 auto Engine::renderTexture(const std::string &id, float x, float y, double angle, float scale, Uint8 opacity) -> bool
 {
-    return renderTexture(id, {0, 0, 0, 0}, {x, y, 0, 0}, angle, scale, opacity);
+    return renderTexture(id, {0, 0, 0, 0}, {x, y, 0, 0}, angle, scale, opacity, SDL_FLIP_NONE);
 }
 
 auto Engine::renderTexture(const std::string &id) -> bool
 {
-    return renderTexture(id, {0, 0, 0, 0}, {0, 0, 0, 0}, 0, 1, 255);
+    return renderTexture(id, {0, 0, 0, 0}, {0, 0, 0, 0}, 0, 1, 255, SDL_FLIP_NONE);
 }
 
 auto Engine::textFont(const std::string &id) -> TTF_Font *

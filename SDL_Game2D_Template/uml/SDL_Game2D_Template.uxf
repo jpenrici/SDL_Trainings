@@ -4,10 +4,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>177</x>
-      <y>81</y>
-      <w>408</w>
-      <h>306</h>
+      <x>120</x>
+      <y>36</y>
+      <w>432</w>
+      <h>330</h>
     </coordinates>
     <panel_attributes>Engine
 --
@@ -83,16 +83,17 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>633</x>
-      <y>87</y>
+      <x>600</x>
+      <y>33</y>
       <w>297</w>
-      <h>288</h>
+      <h>321</h>
     </coordinates>
     <panel_attributes>Engine2
 --
 -m_layers :std::set&lt;int&gt;
--m_sprites : std::map&lt;string, Sprite&gt;
+-m_quiet : bool
 -m_spriteSheets : std::map&lt;string, SpriteSheet&gt;
+-m_sprites : std::map&lt;string, Sprite&gt;
 -m_texts : std::map&lt;string, Text&gt;
 -m_viewBoxCollider : bool
 -Animation : struct
@@ -101,55 +102,57 @@ Engine(screenWidth : int, screenHeight : int, title : string &amp;)
 -Text : struct
 --
 Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
--newSprite(id : string, spriteSheetID : string, x : float, y : float, width : float, height : float, quiet : bool) : bool
+-newSprite(id : string, spriteSheetID : string, x : float, y : float, width : float, height : float) : bool
 -spriteSheet(id : string) : tuple&lt;SpriteSheet, bool&gt;
-#checkCollision(spriteId1 : string, spriteId2 : string, quiet : bool) : bool
-#eraseSprite(id : string, quiet : bool) : bool
-#loadSprite(id : string, filename : string &amp;, quiet : bool) : bool
+#checkCollision(spriteId1 : string, spriteId2 : string) : bool
+#eraseSprite(id : string) : bool
+#loadSprite(id : string, filename : string &amp;) : bool
 #loadSpriteSheet(id : string, filename : string &amp;) : bool
 #loadSpriteSheet(string &amp;id, rows : int, columns : int, filename : string &amp;) : bool
-#newAnimation(id : string, spriteId : string, vector&lt;int&gt;; spriteNumbers, int timeInterval, quiet : bool) : bool
-#newSprite(id : string, spriteSheetId : string, box : stbox::Rectangle, quiet : bool) : bool
-#newSprite(id : string, spriteSheetId : string, quiet : bool) : bool
-#newSprite(id : string, spriteSheetId : string, x : float, y : float, quiet : bool) : bool
+#newAnimation(id : string, spriteId : string, vector&lt;int&gt;; spriteNumbers, int timeInterval!m_quiet) : bool
+#newSprite(id : string, spriteSheetId : string, box : stbox::Rectangle) : bool
+#newSprite(id : string, spriteSheetId : string) : bool
+#newSprite(id : string, spriteSheetId : string, x : float, y : float) : bool
+#newSprite(sprite : Sprite) : bool
 #newText(id : string &amp;, fontId : string &amp;, text : string &amp;, position : stbox::Point, foreground : stbox::Color::RGBA, size : int) : bool
 #render() : void
 #renderSprite(sprite : Sprite) : bool
 #renderText(textId : string) : bool
-#restartAnimation(id : string, quiet : bool) : bool
-#setAnimation(id : string, spriteId : string, quiet : bool) : bool
-#setAnimationSpeed(id : string, spped : int, quiet : bool) : bool
-#setSpriteActivity(id : string, activity : State::Activity, quiet : bool) : bool
-#setSpriteAngle(id : string, angle : double, quiet : bool) : bool
-#setSpriteBoxCollider(id : string, box : stbox::Rectangle, quiet : bool) : bool
-#setSpriteBoxCollider(id : string, width : float, height : float, quiet : bool) : bool
-#setSpriteByIndex(id : string, index : int, quiet : bool) : bool
-#setSpriteEmptyBoxCollider(id : string, position : stbox::Point, quiet : bool) : bool
-#setSpriteEmptyBoxCollider(id : string, quiet : bool) : bool
-#setSpriteLayer(id : string, layer : int, quiet : bool) : bool
-#setSpriteOpacity(id : string, Uint8 : opacityPercentage, quiet : bool) : bool
-#setSpritePosition(id : string, position : stbox::Point, quiet : bool) : bool
-#setSpriteScale(id : string, scale : float, quiet : bool) : bool
-#setSpriteSolid(id : string, isSolid : bool, quiet : bool) : bool
-#setText(id : string, text : string, quiet : bool) : bool
-#setTextActivity(id : string, activity : State::Activity, quiet : bool) : bool
-#setTextAngle(id : string, angle : int, quiet : bool) : bool
-#setTextColor(id : string, foreground : stbox::Color::RGBA, quiet : bool) : bool
-#setTextFont(id : string, fontId : string, quiet : bool) : bool
-#setTextLayer(id : string, layer : int, quiet : bool) : bool
-#setTextOpacity(id : string, Uint8 : opacityPercentage, quiet : bool) : bool
-#setTextPosition(id : string, position : stbox::Point, quiet : bool) : bool
-#setTextScale(id : string, scale : float, quiet : bool) : bool
-#setTextSize(id : string, size : int, quiet : bool) : bool
-#sprite(id : string, quiet : bool) : tuple&lt;Sprite, bool&gt;;
-#spriteSheetSize(id : string, quiet : bool) : stbox::Math::Size&lt;float&gt;
+#restartAnimation(id : string) : bool
+#setAnimation(id : string, spriteId : string) : bool
+#setAnimationSpeed(id : string, spped : int) : bool
+#setSpriteActivity(id : string, activity : State::Activity) : bool
+#setSpriteAngle(id : string, angle : double) : bool
+#setSpriteBoxCollider(id : string, box : stbox::Rectangle) : bool
+#setSpriteBoxCollider(id : string, width : float, height : float) : bool
+#setSpriteByIndex(id : string, index : int) : bool
+#setSpriteEmptyBoxCollider(id : string, position : stbox::Point) : bool
+#setSpriteEmptyBoxCollider(id : string) : bool
+#setSpriteLayer(id : string, layer : int) : bool
+#setSpriteOpacity(id : string, Uint8 : opacityPercentage) : bool
+#setSpritePosition(id : string, position : stbox::Point) : bool
+#setSpriteScale(id : string, scale : float) : bool
+#setSpriteSolid(id : string, isSolid : bool) : bool
+#setText(id : string, text : string) : bool
+#setTextActivity(id : string, activity : State::Activity) : bool
+#setTextAngle(id : string, angle : int) : bool
+#setTextColor(id : string, foreground : stbox::Color::RGBA) : bool
+#setTextFont(id : string, fontId : string) : bool
+#setTextLayer(id : string, layer : int) : bool
+#setTextOpacity(id : string, Uint8 : opacityPercentage) : bool
+#setTextPosition(id : string, position : stbox::Point) : bool
+#setTextScale(id : string, scale : float) : bool
+#setTextSize(id : string, size : int) : bool
+#sprite() : Sprite;
+#sprite(id : string) : tuple&lt;Sprite, bool&gt;;
+#spriteSheetSize(id : string) : stbox::Math::Size&lt;float&gt;
 #sprites() : map&lt;string, Sprite&gt;;
-#stopAnimation(id : string, quiet : bool) : bool
-#swapSprite(id : string, sprite : Sprite, quiet : bool) : bool
+#stopAnimation(id : string) : bool
+#swapSprite(id : string, sprite : Sprite) : bool
 #template&lt;typename T&gt;; auto windowSize() : stbox::Math::Size&lt;T&gt;
 #text(id : string) : Text
 #texts() : map&lt;string, Text&gt;
-#totalSprites() : int
+#totalSprites() : size_t
 #viewBoxCollider(enabled : bool) : void
 </panel_attributes>
     <additional_attributes/>
@@ -157,8 +160,8 @@ Engine2(screenWidth : int, screenHeight : int, title : string &amp;)
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>177</x>
-      <y>402</y>
+      <x>144</x>
+      <y>381</y>
       <w>114</w>
       <h>33</h>
     </coordinates>
@@ -174,10 +177,10 @@ Performance
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>633</x>
-      <y>384</y>
-      <w>102</w>
-      <h>93</h>
+      <x>600</x>
+      <y>363</y>
+      <w>117</w>
+      <h>102</h>
     </coordinates>
     <panel_attributes>&lt;&lt;struct&gt;&gt;
 Text
@@ -205,8 +208,8 @@ Text
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>747</x>
-      <y>498</y>
+      <x>711</x>
+      <y>492</y>
       <w>60</w>
       <h>51</h>
     </coordinates>
@@ -226,8 +229,8 @@ SpriteSheet
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>630</x>
-      <y>498</y>
+      <x>594</x>
+      <y>489</y>
       <w>90</w>
       <h>72</h>
     </coordinates>
@@ -252,10 +255,10 @@ Animation
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>630</x>
-      <y>600</y>
-      <w>198</w>
-      <h>132</h>
+      <x>597</x>
+      <y>579</y>
+      <w>210</w>
+      <h>186</h>
     </coordinates>
     <panel_attributes>&lt;&lt;struct&gt;&gt;
 Sprite
@@ -301,8 +304,8 @@ Sprite
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>324</x>
-      <y>402</y>
+      <x>291</x>
+      <y>381</y>
       <w>90</w>
       <h>33</h>
     </coordinates>
@@ -319,10 +322,10 @@ Example()
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>966</x>
-      <y>243</y>
-      <w>153</w>
-      <h>132</h>
+      <x>933</x>
+      <y>222</y>
+      <w>168</w>
+      <h>135</h>
     </coordinates>
     <panel_attributes>Game
 --
@@ -357,8 +360,8 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>360</x>
-      <y>384</y>
+      <x>327</x>
+      <y>363</y>
       <w>9</w>
       <h>24</h>
     </coordinates>
@@ -368,8 +371,8 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>234</x>
-      <y>384</y>
+      <x>201</x>
+      <y>363</y>
       <w>9</w>
       <h>24</h>
     </coordinates>
@@ -379,8 +382,8 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>582</x>
-      <y>228</y>
+      <x>549</x>
+      <y>207</y>
       <w>57</w>
       <h>9</h>
     </coordinates>
@@ -390,30 +393,30 @@ Game()
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>669</x>
-      <y>567</y>
-      <w>12</w>
-      <h>39</h>
+      <x>636</x>
+      <y>558</y>
+      <w>9</w>
+      <h>27</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>20.0;10.0;10.0;110.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>717</x>
-      <y>531</y>
+      <x>681</x>
+      <y>525</y>
       <w>36</w>
-      <h>12</h>
+      <h>9</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>100.0;10.0;10.0;20.0</additional_attributes>
+    <additional_attributes>100.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>927</x>
-      <y>297</y>
+      <x>894</x>
+      <y>276</y>
       <w>45</w>
       <h>9</h>
     </coordinates>
@@ -423,8 +426,8 @@ Game()
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>507</x>
-      <y>393</y>
+      <x>474</x>
+      <y>372</y>
       <w>72</w>
       <h>57</h>
     </coordinates>
@@ -444,10 +447,10 @@ State
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>861</x>
-      <y>426</y>
-      <w>66</w>
-      <h>90</h>
+      <x>813</x>
+      <y>405</y>
+      <w>87</w>
+      <h>93</h>
     </coordinates>
     <panel_attributes>&lt;&lt;namespace&gt;&gt;
 stbox
@@ -472,8 +475,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>576</x>
-      <y>300</y>
+      <x>543</x>
+      <y>279</y>
       <w>63</w>
       <h>132</h>
     </coordinates>
@@ -483,8 +486,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>420</x>
-      <y>384</y>
+      <x>387</x>
+      <y>363</y>
       <w>93</w>
       <h>48</h>
     </coordinates>
@@ -494,8 +497,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>537</x>
-      <y>447</y>
+      <x>504</x>
+      <y>426</y>
       <w>99</w>
       <h>231</h>
     </coordinates>
@@ -505,19 +508,19 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>825</x>
-      <y>513</y>
-      <w>72</w>
-      <h>165</h>
+      <x>804</x>
+      <y>495</y>
+      <w>60</w>
+      <h>162</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>220.0;10.0;10.0;530.0</additional_attributes>
+    <additional_attributes>180.0;10.0;10.0;520.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>885</x>
-      <y>372</y>
+      <x>852</x>
+      <y>351</y>
       <w>9</w>
       <h>60</h>
     </coordinates>
@@ -527,8 +530,8 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>576</x>
-      <y>429</y>
+      <x>543</x>
+      <y>408</y>
       <w>63</w>
       <h>9</h>
     </coordinates>
@@ -538,12 +541,12 @@ stbox
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>732</x>
-      <y>426</y>
-      <w>135</w>
+      <x>714</x>
+      <y>405</y>
+      <w>105</w>
       <h>48</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>430.0;140.0;10.0;10.0</additional_attributes>
+    <additional_attributes>330.0;140.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>

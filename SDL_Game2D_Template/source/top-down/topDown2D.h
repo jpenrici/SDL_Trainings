@@ -16,7 +16,7 @@ private:
     enum Layer {BACKGROUND = -4, SCENE, OBSTACLES, PLAYER, TEXT, TOP};
 
     // Sprites
-    std::string m_gameOver{"GameOver"};
+    std::string m_gameOverId{"GameOver"};
 
     std::array<std::string, 3> m_bkgId {"Background", "Background1", "Background2"};
     int m_bkgSpeed;
@@ -35,18 +35,22 @@ private:
     int m_bulletCounter;
     int m_bulletSpeed;
 
+    void newObstacle();
+
     // HUD
-    int m_playerEnergy{100};
+    float m_playerEnergy{100};
     int m_collisions{0};
     int m_hits{0};
     int m_score{0};
 
-    // Game
+    // Audio
     bool mute{false};
-    void newObstacle();
+
+    // Graphics
+    void render() final;
     void renderBar(stbox::Rectangle rectangle, RGBA color);
 
-    void render() final;
+    // Game logic
     void update() final;
 };
 

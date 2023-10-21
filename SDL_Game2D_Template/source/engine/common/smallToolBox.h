@@ -211,12 +211,12 @@ public:
         }
     };
 
-    inline auto toFloat(int value) -> float
+    static auto toFloat(int value) -> float
     {
         return static_cast<float>(value);
     }
 
-    inline auto toInt(float value) -> int
+    static auto toInt(float value) -> int
     {
         return static_cast<int>(value);
     }
@@ -570,12 +570,12 @@ class Point {
     struct Coordinate {
         double value{0};
 
-        auto toInt() -> int
+        auto toInt() -> const int
         {
             return static_cast<int>(value);
         }
 
-        auto toFloat() -> float
+        auto toFloat() -> const float
         {
             return static_cast<float>(value);
         }
@@ -1140,7 +1140,7 @@ public:
     // Calculates the points between the intersection of two polygons.
     auto intersect(const Points &polygonPoints) -> Points
     {
-        int result;
+        int result{0};
         Point point;
         Points vertices;
         Points vPoly1 = points();

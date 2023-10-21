@@ -41,7 +41,7 @@ public:
     static void inform(const std::string &message);
 
     // More than one line.
-    virtual void inform(std::initializer_list<std::string> messages, bool multipleLines = false) final;
+    virtual void inform(std::initializer_list<std::string> messages, bool multipleLines) final;
 
 protected:
     // Window
@@ -106,10 +106,10 @@ protected:
 
     virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
                                 const SDL_Color &foreground, int fontSize, double angle, float scale,
-                                Uint8 opacity, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
+                                Uint8 opacity, SDL_RendererFlip flip) -> bool final;
 
     virtual auto renderTexture(const std::string &id) -> bool final;
-    virtual auto renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
+    virtual auto renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip) -> bool final;
     virtual auto renderTexture(const std::string &id, float x, float y, double angle, float scale, Uint8 opacity) -> bool final;
 
 
@@ -160,7 +160,7 @@ private:
     virtual void quit()   { /* Reserved for custom code for freeing/destroying SDL objects. */ };
 
     // Render
-    virtual auto renderTexture(SDL_Texture *texture, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip = SDL_FLIP_NONE) -> bool final;
+    virtual auto renderTexture(SDL_Texture *texture, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip) -> bool final;
 };
 
 #endif
