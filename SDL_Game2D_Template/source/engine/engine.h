@@ -107,11 +107,16 @@ protected:
     virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
                                 const SDL_Color &foreground, int fontSize, double angle, float scale,
                                 Uint8 opacity, SDL_RendererFlip flip) -> bool final;
+    virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
+                                const SDL_Color &foreground, int fontSize, double angle, float scale,
+                                Uint8 opacity) -> bool final;
+    virtual auto renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
+                                const SDL_Color &foreground, int fontSize) -> bool final;
 
     virtual auto renderTexture(const std::string &id) -> bool final;
     virtual auto renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, double angle, float scale, Uint8 opacity, SDL_RendererFlip flip) -> bool final;
+    virtual auto renderTexture(const std::string &id, float x, float y) -> bool final;
     virtual auto renderTexture(const std::string &id, float x, float y, double angle, float scale, Uint8 opacity) -> bool final;
-
 
     virtual auto textFont(const std::string &id) -> TTF_Font *final;
     virtual auto textFontExists(const std::string &id) -> bool final;

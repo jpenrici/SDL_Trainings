@@ -1,5 +1,5 @@
 #include "example.h"
-#include "../engine/smallToolBox.h"
+#include "../engine/common/smallToolBox.h"
 
 using stbox::Math;
 
@@ -31,7 +31,7 @@ void Example::render()
     SDL_RenderFillRect(currentRenderer(), &rectangle);
 
     // Image
-    renderTexture("image", 150, 50, 0, 1);
+    renderTexture("image", 150, 50);
 
     // Dummy player.
     SDL_SetRenderDrawColor(currentRenderer(), 255, 150, 0, 255);
@@ -42,13 +42,13 @@ void Example::render()
     auto strFps   = "fps : " + std::to_string(performanceReport().framesPerSecond);
     auto strTicks = "ticks : " + std::to_string(performanceReport().ticks);
     auto dummyPos = std::to_string(static_cast<int>(m_dummy.x)) + "," + std::to_string(static_cast<int>(m_dummy.y));
-    renderTextFont("fontEx", gameTitle(), {windowWidth<float>() - 100, 10}, blue, 20, 0, 1);
-    renderTextFont("fontEx", strDt, {5, 10}, green, 14, 0, 1);
-    renderTextFont("fontEx", strFps, {5, 25}, green, 14, 0, 1);
-    renderTextFont("fontEx", strTicks, {5, 40}, green, 14, 0, 1);
-    renderTextFont("fontEx", dummyPos, {m_dummy.x + m_dummy.w + 2, m_dummy.y + m_dummy.h + 2}, green, 13, 0, 1);
-    renderTextFont("fontEx", "Use WASD or Arrows to move.",  {5, windowHeight<float>() - 20}, white, 14, 0, 1);
-    renderTextFont("fontEx", "Simple DirectMedia Layer", {130, 70}, white, 24, 344, 1);
+    renderTextFont("fontEx", gameTitle(), {windowWidth<float>() - 100, 10}, blue, 20);
+    renderTextFont("fontEx", strDt, {5, 10}, green, 14);
+    renderTextFont("fontEx", strFps, {5, 25}, green, 14);
+    renderTextFont("fontEx", strTicks, {5, 40}, green, 14);
+    renderTextFont("fontEx", dummyPos, {m_dummy.x + m_dummy.w + 2, m_dummy.y + m_dummy.h + 2}, green, 13);
+    renderTextFont("fontEx", "Use WASD or Arrows to move.",  {5, windowHeight<float>() - 20}, white, 14);
+    renderTextFont("fontEx", "Simple DirectMedia Layer", {130, 70}, white, 24, 344, 1, 200);
 }
 
 void Example::update()

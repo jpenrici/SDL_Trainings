@@ -512,6 +512,18 @@ auto Engine::renderTextFont(const std::string &fontId, const std::string &text, 
     return false;
 }
 
+auto Engine::renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
+                            const SDL_Color &foreground, int fontSize, double angle, float scale, Uint8 opacity) -> bool
+{
+    return renderTextFont(fontId, text, position, foreground, fontSize, angle, scale, opacity, SDL_FLIP_NONE);
+}
+
+auto Engine::renderTextFont(const std::string &fontId, const std::string &text, const SDL_FPoint &position,
+                            const SDL_Color &foreground, int fontSize) -> bool
+{
+    return renderTextFont(fontId, text, position, foreground, fontSize, 0, 1, 255, SDL_FLIP_NONE);
+}
+
 auto Engine::renderTexture(SDL_Texture *texture, SDL_Rect clip, SDL_FRect box, double angle, float scale,
                            Uint8 opacity, SDL_RendererFlip flip) -> bool
 {
@@ -566,6 +578,11 @@ auto Engine::renderTexture(const std::string &id, SDL_Rect clip, SDL_FRect box, 
 auto Engine::renderTexture(const std::string &id, float x, float y, double angle, float scale, Uint8 opacity) -> bool
 {
     return renderTexture(id, {0, 0, 0, 0}, {x, y, 0, 0}, angle, scale, opacity, SDL_FLIP_NONE);
+}
+
+auto Engine::renderTexture(const std::string &id, float x, float y) -> bool
+{
+    return renderTexture(id, {0, 0, 0, 0}, {x, y, 0, 0}, 0, 1, 255, SDL_FLIP_NONE);
 }
 
 auto Engine::renderTexture(const std::string &id) -> bool
