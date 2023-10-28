@@ -48,7 +48,7 @@ private:
 
     // Graphics
     void render() final;
-    void renderBar(stbox::Rectangle rectangle, RGBA color);
+    void renderBar(stbox::Math::Rectangle rectangle, RGBA color);
 
     // Game logic
     void update() final;

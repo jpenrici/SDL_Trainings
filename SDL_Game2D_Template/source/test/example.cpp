@@ -1,7 +1,6 @@
 #include "example.h"
-#include "../engine/common/smallToolBox.h"
+#include "../engine/common/smallToolBox/src/smalltoolbox_math.hpp"
 
-using stbox::Math;
 
 Example::Example(): Engine(640, 480, "Example")
 {
@@ -26,8 +25,10 @@ void Example::render()
     auto white = SDL_Color{255, 255, 255};
 
     // Random lines.
-    SDL_Rect rectangle{Math::randomize(windowWidth()), Math::randomize(windowHeight()), 2, Math::randomize(windowHeight())};
-    SDL_SetRenderDrawColor(currentRenderer(), Math::randomize(255), Math::randomize(255), Math::randomize(255), 255);
+    SDL_Rect rectangle{stbox::Math::randomize(windowWidth()), stbox::Math::randomize(windowHeight()), 2,
+                       stbox::Math::randomize(windowHeight())};
+    SDL_SetRenderDrawColor(currentRenderer(), stbox::Math::randomize(255), stbox::Math::randomize(255),
+                           stbox::Math::randomize(255), 255);
     SDL_RenderFillRect(currentRenderer(), &rectangle);
 
     // Image

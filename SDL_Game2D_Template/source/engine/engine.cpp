@@ -1,5 +1,5 @@
 #include "engine.h"
-#include "./common/smallToolBox.h"
+#include "common/smallToolBox/src/smalltoolbox_text.hpp"
 
 Engine::Engine(int screenWidth, int screenHeight, const std::string &title)
 {
@@ -119,7 +119,7 @@ void Engine::gameLoop()
 
         if (m_gamePerformance.ticks % static_cast<long>(15 * 1000) == 0) {
             inform(stbox::Text::toStr("Ticks: ", m_gamePerformance.ticks, " FPS: ", m_gamePerformance.framesPerSecond,
-                                      " Delay: ", delay, " Delta time: ", m_gamePerformance.deltaTime, " seconds"));
+                               " Delay: ", delay, " Delta time: ", m_gamePerformance.deltaTime, " seconds"));
         }
     }
     while (!m_externalControl);
@@ -480,7 +480,7 @@ auto Engine::loadTexture(const std::string &id, int rows, int  columns, const st
 
     m_textures[id] = texture;
     inform(stbox::Text::toStr("Added Texture: ", id, ", Rows [", rows, "], Columns [", columns,
-                              "], Texture [", width, " x ", height, "], ", filename, "]"));
+                       "], Texture [", width, " x ", height, "], ", filename, "]"));
 
     return true;
 }

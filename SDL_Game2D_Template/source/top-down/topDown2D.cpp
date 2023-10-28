@@ -115,7 +115,7 @@ void Game::render()
     renderBar({{player.position.X.value, player.position.Y.value + player.height + 5}, width, 5}, {255, 120, 0, 128});
 }
 
-void Game::renderBar(stbox::Rectangle rectangle, RGBA color)
+void Game::renderBar(stbox::Math::Rectangle rectangle, RGBA color)
 {
     SDL_FRect rect{rectangle.origin.X.toFloat(), rectangle.origin.Y.toFloat(), rectangle.width<float>(), rectangle.height<float>()};
     SDL_SetRenderDrawColor(currentRenderer(), color.R, color.G, color.B, color.A);

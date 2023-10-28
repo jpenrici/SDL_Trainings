@@ -1,4 +1,5 @@
 #include "engine2.h"
+#include "common/smallToolBox/src/smalltoolbox_text.hpp"
 
 Engine2::Engine2(int screenWidth, int screenHeight, const std::string &title)
     : Engine(screenWidth, screenHeight, title) {}
@@ -644,7 +645,7 @@ auto Engine2::Sprite::getAnimation() -> Animation
     return animation;
 }
 
-void Engine2::Sprite::move(Position distance, stbox::Rectangle limit)
+void Engine2::Sprite::move(Position distance, stbox::Math::Rectangle limit)
 {
     auto x = position.X.value + distance.X.value;
     auto y = position.Y.value + distance.Y.value;
@@ -688,7 +689,7 @@ void Engine2::Sprite::move(double distance, double angle)
     position = position.position(angle, distance);
 }
 
-void Engine2::Sprite::move4directions(double distance, stbox::Rectangle limit, State::Input state)
+void Engine2::Sprite::move4directions(double distance, stbox::Math::Rectangle limit, State::Input state)
 {
     switch (state) {
     case State::Input::keyboard_up:
@@ -708,7 +709,7 @@ void Engine2::Sprite::move4directions(double distance, stbox::Rectangle limit, S
     }
 }
 
-void Engine2::Sprite::move8directions(double distance, stbox::Rectangle limit, State::Input state)
+void Engine2::Sprite::move8directions(double distance, stbox::Math::Rectangle limit, State::Input state)
 {
     move4directions(distance, limit, state);
 

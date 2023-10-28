@@ -5,6 +5,13 @@ project(Example LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(directory "../engine")
+if(EXISTS "${directory}/common/smallToolBox")
+    message(STATUS "${directory}/common/smallToolBox exists ...")
+else()
+    include ("${directory}/CMakeLists.txt")
+endif()
+
 file(GLOB SOURCES
     "*.h"
     "*.cpp"

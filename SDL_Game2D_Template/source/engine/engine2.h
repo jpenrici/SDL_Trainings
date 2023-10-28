@@ -5,11 +5,12 @@
 #include <vector>
 
 #include "engine.h"
-#include "./common/smallToolBox.h"
+#include "common/smallToolBox/src/smalltoolbox_image.hpp"
+#include "common/smallToolBox/src/smalltoolbox_math.hpp"
 
-using BoxCollider = stbox::Rectangle;
-using Position    = stbox::Point;
-using RGBA        = stbox::Color::RGBA;
+using BoxCollider = stbox::Math::Rectangle;
+using Position    = stbox::Math::Point;
+using RGBA        = stbox::Image::Color::RGBA;
 
 
 // SDL Game
@@ -91,10 +92,10 @@ protected:
         virtual auto setAnimation(std::string animationId) -> bool final;
 
         virtual void move(Position distance) final;
-        virtual void move(Position distance, stbox::Rectangle limit) final;
+        virtual void move(Position distance, stbox::Math::Rectangle limit) final;
         virtual void move(double distance, double angle) final;
-        virtual void move4directions(double distance, stbox::Rectangle limit, State::Input state) final;
-        virtual void move8directions(double distance, stbox::Rectangle rectangle, State::Input state) final;
+        virtual void move4directions(double distance, stbox::Math::Rectangle limit, State::Input state) final;
+        virtual void move8directions(double distance, stbox::Math::Rectangle rectangle, State::Input state) final;
         virtual void moveHorizontal(double distance) final;
         virtual void moveTo(Position newPosition, double limit, bool isGreater, bool vertically) final;
         virtual void moveVertical(double distance) final;
